@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sky24 Real Estate</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <header class="top-nav">
+        <div class="logo">Sky<span style="color: azure;">24</span></div>
+        <!-- Header Legal Links -->
+        <nav class="header-links">
+            <a href="index.html" class="nav-home">Home</a>
+            <a href="about.html">About</a>
+            <a href="terms.html">Terms</a>
+            <a href="privacy.html">Privacy</a>
+            <a href="disclaimer.html">Disclaimer</a>
+            <a href="help.html">Help</a>
+        </nav>
+        <div class="nav-actions">
+            <button id="loginBtn" class="btn neon">Login</button>
+            <button id="registerBtn" class="btn ghost neon-border">Register</button>
+            <button id="openAdminBtn" class="btn neon hidden">Admin Panel</button>
+        </div>
+        <p class="swap-text">
+            <span id="openForgot">Forgot password?</span>
+        </p>
+    </header>
+
+    <!-- HERO SECTION -->
+    <section class="hero-section">
+        <h1>Sky24: Your Free Listing Platfoprm for Buying & Selling Property. </h1>
+        <h2>Your Real-Estate Partner</h2>
+        <h2>Find Your Dream Property</h2>
+        <p>Buy, Sell or Rent properties anywhere in India — fast and free.</p>
+    </section>
+
+    <!-- SLIDER -->
+    <section class="hero-slider">
+        <div class="slider-container">
+
+            <div class="slide active">
+                <img src="assets/team/pexels-binyaminmellish-106399.jpg" alt="">
+                <div class="slide-caption">
+                    <h2>Buy or Rent listing Without Charges</h2>
+                    <p>Find verified listings</p>
+                </div>
+            </div>
+
+            <div class="slide">
+                <img src="assets/team/pexels-expect-best-79873-323780.jpg" alt="">
+                <div class="slide-caption">
+                    <h2>Contect Brokers & Owners</h2>
+                    <p>Get Safe property deals with Local agents</p>
+                </div>
+            </div>
+
+            <div class="slide">
+                <img src="assets/team/pexels-pixabay-259588.jpg" alt="">
+                <div class="slide-caption">
+                    <h2>Explore Properties in Top Cities</h2>
+                    <p>Perfect homes, shops, land & more</p>
+                </div>
+            </div>
+
+        </div>
+
+        <button class="slider-btn prev-btn">&#10094;</button>
+        <button class="slider-btn next-btn">&#10095;</button>
+
+        <div class="slider-dots">
+            <span class="dot active-dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+        </div>
+    </section>
+
+    <div class="search-wrapper">
+
+        <!-- LOCATION SEARCH -->
+        <div class="loc-search-box">
+            <h3>Search by Location</h3>
+
+            <select id="stateSelect" class="search-select">
+                <option value="">Select State</option>
+            </select>
+
+            <select id="citySelect" class="search-select">
+                <option value="">Select City</option>
+            </select>
+
+            <select id="areaSelect" class="search-select">
+                <option value="">Select Area</option>
+            </select>
+
+            <button id="searchLocationBtn" class="btn neon">Search</button>
+        </div>
+
+        <!-- PROPERTY TYPE SEARCH -->
+        <div class="type-search-box">
+            <h3>Search by Property Type</h3>
+
+            <select id="propertyTypeSelect" class="search-select">
+                <option value="">Select Property Type</option>
+                <option>Commercial</option>
+                <option>Agriculture</option>
+                <option>Hotels</option>
+                <option>Factory</option>
+                <option>Flats</option>
+                <option>House</option>
+                <option>Shops</option>
+                <option>Offices</option>
+                <option>Cold Storage</option>
+                <option>Party Plot</option>
+                <option>Marriage Hall</option>
+                <option>Farm House</option>
+                <option>PG</option>
+                <option>Residential Land / Plot</option>
+            </select>
+
+            <button id="searchTypeBtn" class="btn neon">Search</button>
+        </div>
+    </div>
+
+    <!-- BROKER ID SEARCH -->
+    <div class="broker-search-box">
+        <input id="brokerIdInput" placeholder="Enter Broker ID (SKY24-XXXXXX)">
+        <button id="searchBrokerBtn" class="btn neon">
+            Search Broker/Owner
+        </button>
+    </div>
+
+    <!-- MAIN DASHBOARD (AFTER LOGIN) -->
+    <main id="mainContent" class="hidden">
+
+        <div class="property-container">
+
+            <div class="actions-bar">
+                <button class="btn category">Sell</button>
+                <button class="btn category">Rent</button>
+                <button class="btn category">Plots</button>
+                <button class="btn category">Commercial</button>
+                <button id="addPropBtn" class="btn neon hidden">+ Add Property</button>
+            </div>
+
+            <div class="listings-grid" id="listings"></div>
+        </div>
+    </main>
+
+    <!-- ===============================
+    SINGLE PROPERTY DETAILS VIEW
+    ================================ -->
+    <section id="propertyDetails" class="property-details hidden">
+
+        <!-- Back button -->
+        <button id="backToListings" class="btn back-btn">← Back to Listings</button>
+
+        <!-- Image Gallery -->
+        <div class="property-gallery">
+            <img id="pd_mainImage" class="main-image" src="" alt="Property Image">
+
+            <div class="thumbnail-row">
+                <img class="thumb" id="pd_thumb_hall">
+                <img class="thumb" id="pd_thumb_kitchen">
+                <img class="thumb" id="pd_thumb_bedroom">
+                <img class="thumb" id="pd_thumb_bathroom">
+            </div>
+        </div>
+
+        <!-- Property Info -->
+        <div class="property-info">
+
+            <h1 id="pd_title">Property Title</h1>
+            <p class="pd-location" id="pd_location"></p>
+
+            <div class="pd-price" id="pd_price"></div>
+
+            <!-- Property Specs -->
+            <div class="pd-specs">
+                <div>🏠 Type: <span id="pd_type"></span></div>
+                <div>📐 Sq Ft: <span id="pd_sqft"></span></div>
+                <div>📏 Carpet: <span id="pd_carpet"></span></div>
+                <div>🏢 Floor: <span id="pd_floor"></span>/<span id="pd_totalFloors"></span></div>
+                <div>🛏 Bedrooms: <span id="pd_bedrooms"></span></div>
+                <div>🚿 Bathrooms: <span id="pd_bathrooms"></span></div>
+            </div>
+
+            <!-- Description -->
+            <div class="pd-description">
+                <h3>Description</h3>
+                <p id="pd_description"></p>
+            </div>
+
+            <!-- Owner Details -->
+            <div class="pd-owner">
+                <h3>Owner Details</h3>
+                <p><strong>Name:</strong> <span id="pd_ownerName"></span></p>
+            </div>
+
+            <!-- Broker Details -->
+            <div class="pd-broker">
+                <h3>Broker / Agent</h3>
+                <p><strong>Name:</strong> <span id="pd_agentName"></span></p>
+                <p><strong>Broker ID:</strong> <span id="pd_brokerId"></span></p>
+                <p><strong>MobileNumber:</strong> <span id="pd_MobileNumber"></span></p>
+
+                <button id="viewBrokerListings" class="btn neon">
+                    View All Listings by this Broker
+                </button>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ===============================
+ BROKER PROFILE PAGE
+================================ -->
+    <section id="brokerProfile" class="broker-profile hidden">
+
+        <!-- Back -->
+        <button id="backFromBroker" class="btn back-btn">
+            ← Back
+        </button>
+
+        <!-- Broker Header -->
+        <div class="broker-header">
+            <h1 id="bp_name">Broker Name</h1>
+            <p><strong>Broker ID:</strong> <span id="bp_id"></span></p>
+            <p><strong>Mobile:</strong> <span id="bp_mobile"></span></p>
+            <p><strong>Email:</strong> <span id="bp_email"></span></p>
+            <p><strong>Address:</strong> <span id="bp_address"></span></p>
+        </div>
+
+        <!-- Broker Listings -->
+        <div class="broker-listings">
+            <h2>Properties by this Broker</h2>
+            <div id="bp_listings" class="listings-grid"></div>
+        </div>
+
+    </section>
+
+    <!-- ADS SECTION -->
+    <div class="ads-container">
+
+        <div class="ad-box fancy-hover">
+            <img src="assets/team/best pro.jpg">
+            <p>Best Property Deals</p>
+        </div>
+
+        <div class="ad-box fancy-hover">
+            <img src="assets/team/find.jpg">
+            <p>Find Properties Instantly</p>
+        </div>
+
+        <div class="ad-box fancy-hover">
+            <img src="assets/team/list.jpg">
+            <p>Contect Brokers</p>
+        </div>
+
+        <div class="ad-box fancy-hover">
+            <img src="assets/team/broker.png">
+            <p>Contect Brokers</p>
+        </div>
+
+    </div>
+
+    <!-- BROKER NOTE -->
+    <section class="broker-note">
+        <h3>Broker Verification</h3>
+        <p>Brokers must upload Aadhar card and passport-size photo during registration. These documents are only visible
+            to the founder for security verification.</p>
+    </section>
+
+    <!-- TRENDING -->
+    <section class="trending-section">
+        <h2 class="section-title">Trending Properties</h2>
+
+        <div class="trending-marquee">
+            <div class="marquee-track">
+                <div class="trend-item fancy-hover">Luxury 3BHK – Mumbai</div>
+                <div class="trend-item fancy-hover">Commercial Space – Delhi</div>
+                <div class="trend-item fancy-hover">Farm House – Gujarat</div>
+                <div class="trend-item fancy-hover">PG Rooms – Pune</div>
+                <div class="trend-item fancy-hover">Party Plot – Rajasthan</div>
+                <div class="trend-item fancy-hover">Beach Hotel – Goa</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===============================
+ SKY24 TEAM SECTION
+================================ -->
+    <section class="team-section">
+        <h2 class="section-title">Meet the Team Behind Sky24</h2>
+
+        <div class="team-grid">
+
+            <!-- Founder -->
+            <div class="team-card">
+                <img src="assets/team/Founder.jpg" alt="Founder & CEO">
+                <h3>Akshay Gediya</h3>
+                <p class="role">Founder & CEO</p>
+                <p class="desc">
+                    With over <strong>8 years of experience in the real-estate industry</strong>,
+                    Akshay Gediya is the visionary behind Sky24.
+                    He contributed core ideas, business flow, and feature planning
+                    to ensure Sky24 genuinely helps local brokers and property buyers.
+                </p>
+            </div>
+
+            <!-- Developer -->
+            <div class="team-card">
+                <img src="assets/team/developer.jpg" alt="Developer">
+                <h3>Arjun Mardiya</h3>
+                <p class="role">Developer, Maker & Marketer</p>
+                <p class="desc">
+                    Arjun Mardiya is the technical brain and growth strategist of Sky24.
+                    With <strong>5 years of experience in marketing and sales</strong>,
+                    he designed, developed, and marketed the Sky24 platform
+                    from scratch with a focus on usability, scalability, and trust.
+                </p>
+            </div>
+
+            <!-- Supporter -->
+            <div class="team-card">
+                <img src="assets/team/supporter.jpg" alt="Supporter">
+                <h3>Milan Maradiya</h3>
+                <p class="role">Supporter & Promoter</p>
+                <p class="desc">
+                    Milan Maradiya supports and promotes Sky24 by spreading awareness
+                    and encouraging brokers and users to adopt the platform.
+                    His contribution helps Sky24 grow organically and reach local markets.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- COMING SOON -->
+    <section class="coming-soon">
+        <h2 class="section-title">Coming Soon</h2>
+
+        <div class="coming-grid">
+            <div class="coming-box fancy-hover">AI Price Predictor</div>
+            <div class="coming-box fancy-hover">Advanced Broker Rating</div>
+            <div class="coming-box fancy-hover">Smart Nearby Finder</div>
+        </div>
+    </section>
+
+    <!-- BLOCKER -->
+    <div id="blocker" class="blocker hidden">
+        <div class="blocker-box">
+            <h2>Login Required</h2>
+            <p>Please login or register to continue.</p>
+            <button id="blockerClose" class="btn neon">OK</button>
+        </div>
+    </div>
+
+    <!-- LOGIN MODAL -->
+    <div id="loginModal" class="dark-modal hidden">
+        <div class="modal-content">
+            <span class="close-modal" data-close="loginModal">×</span>
+
+            <h2 class="modal-title">Login</h2>
+
+            <div class="input-box">
+                <input id="loginUser" placeholder=" " />
+                <label>Username or Email</label>
+            </div>
+
+            <div class="input-box">
+                <input id="loginPass" type="password" placeholder=" " />
+                <label>Password</label>
+            </div>
+
+            <button id="loginSubmit" class="btn neon full">Login</button>
+
+            <p class="swap-text">Don't have an account? <span id="openRegister">Register</span></p>
+        </div>
+    </div>
+
+    <!-- REGISTER MODAL -->
+    <div id="registerModal" class="dark-modal hidden">
+        <div class="modal-content">
+            <span class="close-modal" data-close="registerModal">×</span>
+
+            <h2 class="modal-title">Create Account</h2>
+
+            <div class="input-box">
+                <input id="regUser" placeholder=" " />
+                <label>Full Name</label>
+            </div>
+
+            <div class="input-box">
+                <input id="regEmail" type="email" placeholder=" " />
+                <label>Email</label>
+            </div>
+
+            <div class="input-box">
+                <input id="regMobile" type="text" placeholder=" " />
+                <label>Mobile Number</label>
+            </div>
+
+            <div class="input-box">
+                <input id="regPass" type="password" placeholder=" " />
+                <label>Password</label>
+            </div>
+
+            <div class="input-box">
+                <select id="regRole">
+                    <option value="buyer">Buyer / User</option>
+                    <option value="broker">Broker / Owner</option>
+                </select>
+                <label>Account Type</label>
+            </div>
+
+            <!-- Broker-only: documents and address (hidden by default) -->
+            <div id="brokerDocs" style="display:none; margin-top:10px;">
+                <div>
+                    <label>Aadhaar Card (Front)</label>
+                    <input type="file" id="aadharFront" accept="image/*" required>
+
+                    <label>Aadhaar Card (Back)</label>
+                    <input type="file" id="aadharBack" accept="image/*" required>
+                </div>
+                <div style="margin-top: 10px;">
+                    <label style="margin-top:6px;">Passport-size Photo (profile)</label>
+                    <input id="regPassportPhoto" type="file" accept="image/*">
+                </div>
+
+                <div class="input-box broker-only" style="display:block; margin-top:20px;">
+                    <input id="regAddress" type="text" placeholder=" " />
+                    <label>Broker Address</label>
+                </div>
+            </div>
+
+            <button id="registerSubmit" class="btn neon full">Register</button>
+
+            <p class="swap-text">Already have an account? <span id="openLogin">Login</span></p>
+        </div>
+    </div>
+
+    <!-- ADD PROPERTY MODAL -->
+    <div id="addPropertyModal" class="dark-modal hidden">
+        <div class="modal-content large">
+            <span class="close-modal" data-close="addPropertyModal">×</span>
+
+            <h2 class="modal-title">Add Property</h2>
+
+            <!-- LOCATION -->
+            <h4>Location Details</h4>
+            <div class="input-box">
+                <input id="ap_state" placeholder=" ">
+                <label>State</label>
+            </div>
+
+            <div class="input-box">
+                <input id="ap_city" placeholder=" ">
+                <label>City</label>
+            </div>
+
+            <div class="input-box">
+                <input id="ap_pincode" type="number" placeholder="6">
+                <label>Pincode</label>
+            </div>
+
+            <div class="input-box">
+                <input id="ap_area" placeholder=" ">
+                <label>Area</label>
+            </div>
+
+            <div class="input-box">
+                <input id="ap_address" placeholder=" ">
+                <label>Full Address</label>
+            </div>
+
+            <!-- PROPERTY DETAILS -->
+            <h4>Property Details</h4>
+
+            <div class="input-box">
+                <select id="ap_type">
+                    <option value="">Select Property Type</option>
+                    <option>Flats</option>
+                    <option>House</option>
+                    <option>Commercial</option>
+                    <option>Shop</option>
+                    <option>Office</option>
+                    <option>Farm House</option>
+                    <option>Land / Plot</option>
+                    <option>PG</option>
+                </select>
+            </div>
+
+            <div class="input-box">
+                <select id="ap_mode">
+                    <option value="">Sell / Rent</option>
+                    <option>Sell</option>
+                    <option>Rent</option>
+                </select>
+            </div>
+
+            <div class="input-box">
+                <input id="ap_price" type="number" placeholder=" ">
+                <label>Price</label>
+            </div>
+
+            <div class="input-box">
+                <input id="ap_sqft" type="number" placeholder=" ">
+                <label>Total Sq Ft</label>
+            </div>
+
+            <div class="input-box">
+                <input id="ap_carpet" type="number" placeholder=" ">
+                <label>Carpet Area (Sq Ft)</label>
+            </div>
+
+            <div class="input-box">
+                <input id="ap_floor" type="number" placeholder=" ">
+                <label>Floor Number</label>
+            </div>
+
+            <div class="input-box">
+                <input id="ap_total_floors" type="number" placeholder=" ">
+                <label>Total Floors</label>
+            </div>
+
+            <div class="input-box">
+                <input id="ap_bedrooms" type="number" placeholder=" ">
+                <label>Bedrooms</label>
+            </div>
+
+            <div class="input-box">
+                <input id="ap_bathrooms" type="number" placeholder=" ">
+                <label>Bathrooms</label>
+            </div>
+
+            <div class="input-box">
+                <input id="ap_mobile_number" placeholder=" ">
+                <label>Mobile Number</label>
+            </div>
+
+            <div class="input-box">
+                <textarea id="ap_desc" placeholder=" "></textarea>
+                <label>Property Description</label>
+            </div>
+
+            <!-- OWNER DETAILS -->
+            <h4>Owner Details</h4>
+
+            <div class="input-box">
+                <input id="ap_owner_name" placeholder=" ">
+                <label>Owner Name</label>
+            </div>
+
+            <!-- PHOTOS -->
+            <h4>Property Photos</h4>
+
+            <div>
+                <label>Main Photo *</label>
+                <input id="ap_main_photo" type="file" accept="image/*">
+            </div>
+            <div>
+                <label>Hall Photo</label>
+                <input id="ap_hall_photo" type="file" accept="image/*">
+            </div>
+            <div>
+                <label>Kitchen Photo</label>
+                <input id="ap_kitchen_photo" type="file" accept="image/*">
+            </div>
+            <div>
+                <label>Bedroom Photos</label>
+                <input id="ap_bedroom_photos" type="file" multiple accept="image/*">
+            </div>
+            <div>
+                <label>Bathroom Photos</label>
+                <input id="ap_bathroom_photos" type="file" multiple accept="image/*">
+            </div>
+            <div>
+                <button id="submitProperty" class="btn neon full">
+                    Submit Property
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===============================
+ ADMIN DASHBOARD (FOUNDER ONLY)
+================================ -->
+    <section id="adminDashboard" class="admin-dashboard hidden">
+
+        <button id="backFromAdmin" class="btn back-btn">← Back</button>
+
+        <h1>Admin Dashboard</h1>
+
+        <!-- Pending Brokers -->
+        <div class="admin-section">
+            <h2>Pending Broker Verifications</h2>
+            <div id="pendingBrokers"></div>
+        </div>
+
+        <!-- Users -->
+        <div class="admin-section">
+            <h2>All Users</h2>
+            <div id="adminUsersList"></div>
+        </div>
+
+        <!-- Listings -->
+        <div class="admin-section">
+            <h2>All Listings</h2>
+            <div id="adminListings"></div>
+        </div>
+
+    </section>
+
+    <!-- FORGOT PASSWORD MODAL -->
+    <div id="forgotModal" class="dark-modal hidden">
+        <div class="modal-content">
+            <span class="close-modal" data-close="forgotModal">×</span>
+
+            <h2 class="modal-title">Forgot Password</h2>
+
+            <div class="input-box">
+                <input id="forgotEmail" type="email" placeholder=" " />
+                <label>Registered Email</label>
+            </div>
+
+            <button id="forgotSubmit" class="btn neon full">Send Reset Link</button>
+        </div>
+    </div>
+
+    <!-- RESET PASSWORD MODAL -->
+    <div id="resetModal" class="dark-modal hidden">
+        <div class="modal-content">
+            <span class="close-modal" data-close="resetModal">×</span>
+
+            <h2 class="modal-title">Reset Password</h2>
+
+            <div class="input-box">
+                <input id="resetToken" placeholder=" " />
+                <label>Reset Token</label>
+            </div>
+
+            <div class="input-box">
+                <input id="resetPassword" type="password" placeholder=" " />
+                <label>New Password</label>
+            </div>
+
+            <button id="resetSubmit" class="btn neon full">Update Password</button>
+        </div>
+    </div>
+
+    <!-- ================= FOOTER ================= -->
+    <footer class="site-footer">
+        <div class="footer-container">
+            <div>
+                <div class="footer-brand">
+                    <h3>Sky24</h3>
+                    <p>
+                        Sky24 is a free real estate platform connecting buyers with local brokers across India.
+                        We act only as a service provider and do not participate in any transactions.
+                    </p>
+                </div>
+
+                <div class="footer-links">
+                    <h4>Company</h4>
+                    <a href="about.html">About Us</a>
+                    <a href="terms.html">Terms & Conditions</a>
+                    <a href="privacy.html">Privacy Policy</a>
+                    <a href="disclaimer.html">Disclaimer</a>
+                    <a href="help.html">Help & Support</a>
+                    <a href="guide.html">How Sky24 Works</a>
+                </div>
+            </div>
+
+            <div class="footer-social">
+                <a href="https://www.instagram.com/sky_24_official?igsh=dWttNm1qMmxnY2c2" target="_blank"
+                    aria-label="Sky24 Instagram">
+                    <i class="fab fa-instagram"></i>
+                </a>
+
+                <a href="https://youtube.com/@sky_24_official?si=cqolQoskZEaLOg0_" target="_blank"
+                    aria-label="Sky24 YouTube">
+                    <i class="fab fa-youtube"></i>
+                </a>
+            </div>
+
+            <div class="footer-copy">
+                <p>© 2025 Sky24. All rights reserved.</p>
+            </div>
+
+        </div>
+    </footer>
+
+    <!-- COOKIE CONSENT -->
+    <div id="cookieBanner" class="cookie-banner hidden">
+        <p>
+            We use cookies to improve your experience. By continuing to use Sky24,
+            you agree to our <a href="privacy.html">Privacy Policy</a>.
+        </p>
+        <button id="acceptCookies" class="btn neon small">Accept</button>
+    </div>
+
+
+    <script src="app.js"></script>
+</body>
+
+</html>
