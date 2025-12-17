@@ -38,7 +38,7 @@ body {
     backdrop-filter: blur(6px);
     position: sticky;
     top: 0;
-    z-index: 200;
+    z-index: 9999;
 }
 
 .logo {
@@ -83,6 +83,13 @@ body {
     box-shadow: 0 0 14px var(--accent);
 }
 
+/* Re-enable buttons inside navbar */
+.top-nav *,
+.top-nav button,
+.top-nav a {
+    pointer-events: auto;
+}
+
 /* =============================================================
    HERO SECTION
 ============================================================= */
@@ -90,6 +97,7 @@ body {
 .hero-section {
     text-align: center;
     padding: 40px 20px 40px;
+    pointer-events: none;   
 }
 
 .hero-section h1 {
@@ -113,6 +121,7 @@ body {
     overflow: hidden;
     box-shadow: 0 0 40px rgba(0, 0, 0, 0.4);
     position: relative;
+    pointer-events: none;
 }
 
 .slider-container {
@@ -519,6 +528,7 @@ body {
     backdrop-filter: blur(6px);
     transition: 0.3s ease;
     position: relative;
+    pointer-events: none;
 }
 
 .actions-bar.sticky {
