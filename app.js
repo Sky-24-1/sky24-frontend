@@ -78,33 +78,12 @@ function toggleMobileMenu() {
     document.querySelector(".mobile-menu").classList.toggle("active");
 }
 
+document.body.addEventListener("touchstart", () => {}, { passive: true });
 /* ========== AUTH (REGISTER / LOGIN) ========== */
 function initAuthForms() {
     // open modal triggers
     const loginModal = $("loginModal");
     const registerModal = $("registerModal");
-      /* === MOBILE TOUCH SUPPORT (IMPORTANT) === */
-    ["click", "touchstart"].forEach(evt => {
-
-        $("loginBtn")?.addEventListener(evt, () => {
-            openModal($("loginModal"));
-        });
-
-        $("registerBtn")?.addEventListener(evt, () => {
-            openModal($("registerModal"));
-        });
-
-        $("openForgot")?.addEventListener(evt, () => {
-            hide($("loginModal"));
-            show($("forgotModal"));
-        });
-
-    });
-
-    if ($("loginBtn")) $("loginBtn").addEventListener("click", () => openModal(loginModal));
-    if ($("registerBtn")) $("registerBtn").addEventListener("click", () => openModal(registerModal));
-    if ($("openRegister")) $("openRegister").addEventListener("click", () => { closeModal(loginModal); openModal(registerModal); });
-    if ($("openLogin")) $("openLogin").addEventListener("click", () => { closeModal(registerModal); openModal(loginModal); });
 
     // show/hide broker docs & address when role changes
     const regRoleEl = $("regRole");
@@ -193,6 +172,36 @@ function initAuthForms() {
             }
         });
     }
+
+   /* ==========================
+   GLOBAL AUTH BUTTON HANDLER
+========================== */
+document.addEventListener("click", (e) => {
+
+    if (e.target.closest("#loginBtn")) {
+        openModal($("loginModal"));
+    }
+
+    if (e.target.closest("#registerBtn")) {
+        openModal($("registerModal"));
+    }
+
+    if (e.target.closest("#openForgot")) {
+        hide($("loginModal"));
+        show($("forgotModal"));
+    }
+
+    if (e.target.closest("#openRegister")) {
+        closeModal($("loginModal"));
+        openModal($("registerModal"));
+    }
+
+    if (e.target.closest("#openLogin")) {
+        closeModal($("registerModal"));
+        openModal($("loginModal"));
+    }
+
+});
 
     function initResetPasswordPage() {
         const btn = document.getElementById("resetBtn");
@@ -459,31 +468,24 @@ function initBlocker() {
 
     // Global click listener for restricted actions ONLY
     document.addEventListener("click", function (e) {
-
-        // ❌ NEVER block navbar clicks
-        if (e.target.closest(".top-nav")) {
-            return;
-        }
-
         if (getToken()) return;
 
-        const restrictedTargets = [
-            "#addPropBtn",
-            ".type-box",
-            ".city-box",
-            ".property-card"
-        ];
+        if (
+            e.target.closest("#loginBtn") ||
+            e.target.closest("#registerBtn") ||
+            e.target.closest("#openForgot")
+        ) {
+            return; // allow auth buttons
+        }
 
         for (const selector of restrictedTargets) {
             if (e.target.closest(selector)) {
                 e.preventDefault();
-                e.stopPropagation();
                 show(blocker);
                 return;
             }
         }
-
-    }, true);
+    });
 }
 
 /* ========== STICKY BAR (as before) ========== */
