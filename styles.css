@@ -321,7 +321,7 @@ body {
 
 .coming-grid {
     display: flex;
-    justify-content: space-evenly;
+    justify-content: space-around;
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     gap: 20px;
     padding: 20px;
@@ -1243,4 +1243,79 @@ body {
 
 .footer-social a:hover .fa-youtube {
     color: #ff0000;
+}
+
+/* ================================
+   MOBILE NAVBAR FIX
+================================ */
+
+.desktop-only {
+    display: flex;
+}
+
+.mobile-only {
+    display: none;
+}
+
+/* Mobile button */
+.mobile-menu-btn {
+    font-size: 26px;
+    cursor: pointer;
+    color: white;
+}
+
+/* Mobile menu panel */
+.mobile-menu {
+    display: none;
+    flex-direction: column;
+    background: rgba(10, 15, 25, 0.95);
+    padding: 20px;
+    position: absolute;
+    top: 70px;
+    left: 0;
+    width: 100%;
+    z-index: 300;
+    animation: slideDown 0.3s ease;
+}
+
+.mobile-menu a {
+    color: white;
+    text-decoration: none;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.mobile-actions {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.forgot-link {
+    color: var(--accent);
+    text-align: center;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+/* Active state */
+.mobile-menu.active {
+    display: flex;
+}
+
+/* Animation */
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .desktop-only {
+        display: none;
+    }
+    .mobile-only {
+        display: block;
+    }
 }
