@@ -8,7 +8,7 @@
    ============================================================ */
 
 /* ----------------- CONFIG ----------------- */
-const BASE_URL = "https://sky24-backend.onrender.com"; // change to your domain when deploying
+const API_BASE = "https://api.sky24.in";
 const TOKEN_KEY = "sky24_token";
 const USER_KEY = "sky24_user";
 
@@ -59,7 +59,7 @@ async function apiFetch(url, options = {}) {
         headers.Authorization = `Bearer ${token}`;
     }
 
-    const res = await fetch(`${BASE_URL}${url}`, {
+    const res = await fetch(`${API_BASE}${url}`, {
         ...options,
         headers
     });
@@ -152,7 +152,7 @@ function initAuthForms() {
                 registerBtn.disabled = true;
                 registerBtn.textContent = "Registering...";
 
-                const res = await fetch(`${BASE_URL}/api/register`, {
+                const res = await fetch(`${API_BASE}/api/register`, {
                     method: "POST",
                     body: fd
                 });
@@ -204,7 +204,7 @@ function initAuthForms() {
                 return;
             }
 
-            const res = await fetch("http://localhost:4000/api/reset-password", {
+            const res = await fetch(`${API_BASE}/api/reset-password`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -237,7 +237,7 @@ function initAuthForms() {
                 loginBtnSubmit.disabled = true;
                 loginBtnSubmit.textContent = "Logging in...";
 
-                const res = await fetch(`${BASE_URL}/api/login`, {
+                const res = await fetch(`${API_BASE}/api/login`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ login: loginVal, password })
@@ -290,7 +290,7 @@ function renderListings(list = []) {
     list.forEach(item => {
         const card = document.createElement("div");
         card.className = "property-card fancy-hover";
-        const imgSrc = item.mainPhoto ? `${BASE_URL}/${item.mainPhoto.replace(/\\/g, "/")}` : (item.img || "https://via.placeholder.com/600x400?text=Property");
+        const imgSrc = item.mainPhoto ? `${API_BASE}/${item.mainPhoto.replace(/\\/g, "/")}` : (item.img || "https://via.placeholder.com/600x400?text=Property");
         card.innerHTML = `
       <img src="${imgSrc}" alt="${escapeHtml(item.title || "Property")}">
       <h3>${escapeHtml(item.title || "")}</h3>
@@ -391,7 +391,7 @@ function initAddPropertyModal() {
             submitBtn.disabled = true;
             submitBtn.textContent = "Uploading...";
 
-            const res = await fetch(`${BASE_URL}/api/listings`, {
+            const res = await fetch(`${API_BASE}/api/listings`, {
                 method: "POST",
                 headers: {
                     Authorization: `Bearer ${getToken()}`
@@ -658,7 +658,7 @@ function setupLocationSearch() {
         if (city) url += `&city=${city}`;
         if (area) url += `&area=${area}`;
 
-        const res = await fetch(url);
+        const res = await fetch(`${API_BASE}${url}`);
         const data = await res.json();
 
         if (data.listings.length === 0) {
@@ -676,18 +676,31 @@ function setupTypeSearch() {
     $("searchTypeBtn").addEventListener("click", async () => {
         const type = $("propertyTypeSelect").value;
 
-        if (!type) return alert("Please select a property type");
+        if (!type) {
+            alert("Please select a property type");
+            return;
+        }
 
-        const res = await fetch(`/api/listings?type=${type}`);
-        const data = await res.json();
+        try {
+            const res = await fetch(`${API_BASE}/api/listings?type=${encodeURIComponent(type)}`);
+            const data = await res.json();
 
-        if (data.listings.length === 0) {
-            $("listings").innerHTML = `
-                <div class='property-card'>
-                    No property listings found for this type.
-                </div>`;
-        } else {
-            renderListings(data.listings);
+            if (!res.ok) {
+                throw new Error(data.error || "Failed to fetch listings");
+            }
+
+            if (!data.listings || data.listings.length === 0) {
+                $("listings").innerHTML = `
+                    <div class="property-card">
+                        No property listings found for this type.
+                    </div>`;
+            } else {
+                renderListings(data.listings);
+            }
+
+        } catch (err) {
+            console.error("Type search error:", err);
+            alert("Unable to load listings. Please try again.");
         }
     });
 }
@@ -709,7 +722,7 @@ function initForgotPassword() {
         if (!email) return toast("Email required");
 
         try {
-            const res = await fetch(`${BASE_URL}/api/forgot-password`, {
+            const res = await fetch(`${API_BASE}/api/forgot-password`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email })
@@ -736,7 +749,7 @@ function initForgotPassword() {
         }
 
         try {
-            const res = await fetch(`${BASE_URL}/api/reset-password`, {
+            const res = await fetch(`${API_BASE}/api/reset-password`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ token, newPassword })
@@ -866,7 +879,7 @@ function openPropertyDetails(listing) {
 /* Set main image */
 function setMainImage(src) {
     if (!src) return;
-    $("pd_mainImage").src = `${BASE_URL}/${src}`;
+    $("pd_mainImage").src = `${API_BASE}/${src}`;
 }
 
 /* Set thumbnail */
@@ -876,7 +889,7 @@ function setThumb(id, src) {
         el.style.display = "none";
         return;
     }
-    el.src = `${BASE_URL}/${src}`;
+    el.src = `${API_BASE}/${src}`;
     el.style.display = "block";
     el.onclick = () => setMainImage(src);
 }
@@ -894,7 +907,7 @@ $("viewBrokerListings").addEventListener("click", async () => {
     hide($("propertyDetails"));
     show($("mainContent"));
 
-    const res = await fetch(`${BASE_URL}/api/listings?brokerId=${currentListing.brokerId}`);
+    const res = await fetch(`${API_BASE}/api/listings?brokerId=${currentListing.brokerId}`);
     const data = await res.json();
 
     if (data.listings.length === 0) {
@@ -947,7 +960,7 @@ async function openBrokerProfile(brokerId) {
 
     try {
         // 1) Fetch broker info
-        const brokerRes = await fetch(`${BASE_URL}/api/broker/${brokerId}`);
+        const brokerRes = await fetch(`${API_BASE}/api/broker/${brokerId}`);
         const brokerData = await brokerRes.json();
         if (!brokerRes.ok) throw new Error(brokerData.error || "Broker not found");
 
@@ -960,7 +973,7 @@ async function openBrokerProfile(brokerId) {
         $("bp_address").textContent = b.address || "-";
 
         // 2) Fetch broker listings
-        const listRes = await fetch(`${BASE_URL}/api/listings?brokerId=${brokerId}`);
+        const listRes = await fetch(`${API_BASE}/api/listings?brokerId=${brokerId}`);
         const listData = await listRes.json();
 
         const wrap = $("bp_listings");
@@ -1015,7 +1028,7 @@ $("searchBrokerBtn")?.addEventListener("click", async () => {
 
     try {
         // Validate broker exists
-        const res = await fetch(`${BASE_URL}/api/broker/${brokerId}`);
+        const res = await fetch(`${API_BASE}/api/broker/${brokerId}`);
         const data = await res.json();
 
         if (!res.ok) throw new Error(data.error || "Broker not found");
@@ -1191,9 +1204,9 @@ async function loadPendingBrokers() {
                     <span>Broker ID: ${b.brokerId}</span>
 
                     <div class="admin-docs">
-                        <img src="${BASE_URL}/${b.brokerDocs.aadharFront}" alt="Aadhaar Front">
-                        <img src="${BASE_URL}/${b.brokerDocs.aadharBack}" alt="Aadhaar Back">
-                        <img src="${BASE_URL}/${b.brokerDocs.passportPhoto}" alt="Passport Photo">
+                        <img src="${API_BASE}/${b.brokerDocs.aadharFront}" alt="Aadhaar Front">
+                        <img src="${API_BASE}/${b.brokerDocs.aadharBack}" alt="Aadhaar Back">
+                        <img src="${API_BASE}/${b.brokerDocs.passportPhoto}" alt="Passport Photo">
                     </div>
                 </div>
                 <div class="admin-actions">
