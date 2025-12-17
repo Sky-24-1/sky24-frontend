@@ -1251,6 +1251,7 @@ body {
 
 .desktop-only {
     display: flex;
+    gap: 10px;
 }
 
 .mobile-only {
