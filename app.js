@@ -83,6 +83,23 @@ function initAuthForms() {
     // open modal triggers
     const loginModal = $("loginModal");
     const registerModal = $("registerModal");
+      /* === MOBILE TOUCH SUPPORT (IMPORTANT) === */
+    ["click", "touchstart"].forEach(evt => {
+
+        $("loginBtn")?.addEventListener(evt, () => {
+            openModal($("loginModal"));
+        });
+
+        $("registerBtn")?.addEventListener(evt, () => {
+            openModal($("registerModal"));
+        });
+
+        $("openForgot")?.addEventListener(evt, () => {
+            hide($("loginModal"));
+            show($("forgotModal"));
+        });
+
+    });
 
     if ($("loginBtn")) $("loginBtn").addEventListener("click", () => openModal(loginModal));
     if ($("registerBtn")) $("registerBtn").addEventListener("click", () => openModal(registerModal));
@@ -442,9 +459,21 @@ function initBlocker() {
 
     // Global click listener for restricted actions ONLY
     document.addEventListener("click", function (e) {
-        if (getToken()) return; // logged-in users skip blocker
 
-        // Check if clicked element is restricted
+        // ❌ NEVER block navbar clicks
+        if (e.target.closest(".top-nav")) {
+            return;
+        }
+
+        if (getToken()) return;
+
+        const restrictedTargets = [
+            "#addPropBtn",
+            ".type-box",
+            ".city-box",
+            ".property-card"
+        ];
+
         for (const selector of restrictedTargets) {
             if (e.target.closest(selector)) {
                 e.preventDefault();
@@ -453,6 +482,7 @@ function initBlocker() {
                 return;
             }
         }
+
     }, true);
 }
 
