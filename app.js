@@ -74,6 +74,10 @@ async function apiFetch(url, options = {}) {
     return res.json();
 }
 
+function toggleMobileMenu() {
+    document.querySelector(".mobile-menu").classList.toggle("active");
+}
+
 /* ========== AUTH (REGISTER / LOGIN) ========== */
 function initAuthForms() {
     // open modal triggers
