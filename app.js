@@ -34,6 +34,23 @@ function show(el) { if (!el) return; el.classList.remove("hidden"); }
 function hide(el) { if (!el) return; el.classList.add("hidden"); }
 function toast(msg) { alert(msg); } // you can replace with fancier toast later
 
+/* ========== MODAL HELPERS (SINGLE SOURCE) ========== */
+function showModal(el) {
+    if (!el) return;
+    el.classList.remove("hidden");
+    document.body.style.overflow = "hidden";
+}
+
+function hideModal(el) {
+    if (!el) return;
+    el.classList.add("hidden");
+    document.body.style.overflow = "";
+}
+
+/* ===== BACKWARD COMPATIBILITY (DO NOT REMOVE) ===== */
+const openModal = showModal;
+const closeModal = hideModal;
+
 /* ===== SAFE RESTRICTED TARGETS (FIX) ===== */
 const restrictedTargets = [
     ".property-card",
@@ -199,23 +216,6 @@ function initAuthForms() {
             }
         });
     }
-
-/* ========== MODAL HELPERS (SINGLE SOURCE) ========== */
-function showModal(el) {
-    if (!el) return;
-    el.classList.remove("hidden");
-    document.body.style.overflow = "hidden";
-}
-
-function hideModal(el) {
-    if (!el) return;
-    el.classList.add("hidden");
-    document.body.style.overflow = "";
-}
-
-/* ===== BACKWARD COMPATIBILITY (DO NOT REMOVE) ===== */
-const openModal = showModal;
-const closeModal = hideModal;
 
    // function openModal(el) {
        // if (!el) return;
