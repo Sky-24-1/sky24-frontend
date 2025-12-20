@@ -377,6 +377,8 @@ function initAddPropertyModal() {
             toast("Only brokers can add property");
             return;
         }
+       
+       showModal(modal); // ✅ FIXED
     });
 
     const submitBtn = document.getElementById("submitProperty");
