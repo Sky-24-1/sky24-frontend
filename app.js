@@ -349,24 +349,24 @@ function escapeHtml(s) {
 /* ========== ADD PROPERTY (BROKER ONLY) ========== */
 function initAddPropertyModal() {
     const modal = $("addPropertyModal");
-    if (!modal) return;
+    const submitBtn = $("submitProperty");
+    if (!modal || !submitBtn) return;
 
-    // 🔹 OPEN (desktop + mobile safe)
-    document.addEventListener("click", (e) => {
-        const btn = e.target.closest("#addPropBtn");
-        if (!btn) return;
+    // ✅ OPEN MODAL (direct binding, no delegation conflict)
+    const addBtn = $("addPropBtn");
+    if (addBtn) {
+        addBtn.onclick = () => {
+            const user = getUser();
+            if (!user || user.role !== "broker") {
+                toast("Only brokers can add property");
+                return;
+            }
+            openModal(modal);
+        };
+    }
 
-        const user = getUser();
-        if (!user || user.role !== "broker") {
-            toast("Only brokers can add property");
-            return;
-        }
-
-        openModal(modal);
-    });
-
-    // 🔹 SUBMIT
-    $("submitProperty")?.addEventListener("click", async () => {
+    // ✅ SUBMIT PROPERTY
+    submitBtn.onclick = async () => {
         try {
             const user = getUser();
             if (!user || user.role !== "broker") {
@@ -376,7 +376,6 @@ function initAddPropertyModal() {
 
             const fd = new FormData();
 
-            // LOCATION
             fd.append("state", $("ap_state").value.trim());
             fd.append("city", $("ap_city").value.trim());
             fd.append("pincode", $("ap_pincode").value.trim());
@@ -388,7 +387,6 @@ function initAddPropertyModal() {
                 return;
             }
 
-            // PROPERTY
             fd.append("propertyType", $("ap_type").value);
             fd.append("mode", $("ap_mode").value);
             fd.append("price", $("ap_price").value);
@@ -402,7 +400,6 @@ function initAddPropertyModal() {
             fd.append("description", $("ap_desc").value);
             fd.append("ownerName", $("ap_owner_name").value);
 
-            // PHOTOS
             const mainPhoto = $("ap_main_photo").files[0];
             if (!mainPhoto) {
                 toast("Main photo required");
@@ -410,17 +407,14 @@ function initAddPropertyModal() {
             }
             fd.append("mainPhoto", mainPhoto);
 
-            if ($("ap_hall_photo").files[0])
-                fd.append("hallPhoto", $("ap_hall_photo").files[0]);
-
-            if ($("ap_kitchen_photo").files[0])
-                fd.append("kitchenPhoto", $("ap_kitchen_photo").files[0]);
+            if ($("ap_hall_photo").files[0]) fd.append("hallPhoto", $("ap_hall_photo").files[0]);
+            if ($("ap_kitchen_photo").files[0]) fd.append("kitchenPhoto", $("ap_kitchen_photo").files[0]);
 
             [...$("ap_bedroom_photos").files].forEach(f => fd.append("bedroomPhotos", f));
             [...$("ap_bathroom_photos").files].forEach(f => fd.append("bathroomPhotos", f));
 
-            $("submitProperty").disabled = true;
-            $("submitProperty").textContent = "Uploading...";
+            submitBtn.disabled = true;
+            submitBtn.textContent = "Uploading...";
 
             const res = await fetch(`${API_BASE}/api/listings`, {
                 method: "POST",
@@ -430,8 +424,8 @@ function initAddPropertyModal() {
 
             const data = await res.json();
 
-            $("submitProperty").disabled = false;
-            $("submitProperty").textContent = "Submit Property";
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Submit Property";
 
             if (!res.ok) throw new Error(data.error || "Upload failed");
 
@@ -440,11 +434,11 @@ function initAddPropertyModal() {
             fetchListings();
 
         } catch (err) {
-            $("submitProperty").disabled = false;
-            $("submitProperty").textContent = "Submit Property";
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Submit Property";
             toast(err.message || "Upload error");
         }
-    });
+    };
 }
 
 /* ========== BLOCKER (prevent actions for anon) ========== */
