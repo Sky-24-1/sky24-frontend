@@ -593,17 +593,6 @@ function updateNavOnLogin() {
     initAddPropertyModal();
 }
 
-if (openAdminBtn) {
-    openAdminBtn.addEventListener("click", () => {
-        show(document.getElementById("adminPanel"));
-        hide(document.getElementById("mainContent"));
-
-        loadAdminUsers();
-        loadAdminListings();
-        loadPendingBrokers();
-    });
-}
-
 /* ========== ON LOGIN HANDLER ========== */
 function onLogin() {
     hide($("loginModal")); hide($("registerModal"));
