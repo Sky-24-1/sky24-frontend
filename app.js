@@ -460,7 +460,6 @@ function initBlocker() {
 
     // List of items that require login
     const restrictedTargets = [
-        "#addPropBtn",
         ".type-box",
         ".city-box",
         ".property-card"
