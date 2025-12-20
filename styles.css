@@ -541,6 +541,14 @@ body {
     border-radius: 14px;
 }
 
+.actions-bar {
+    pointer-events: none;
+}
+
+.actions-bar button {
+    pointer-events: auto; /* ✅ allow clicks */
+}
+
 .listings-grid {
     display: grid;
     gap: 18px;
