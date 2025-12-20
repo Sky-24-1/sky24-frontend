@@ -124,7 +124,7 @@ function initAuthForms() {
             }
         });
     }
-
+   
     // REGISTER handler (multipart)
     const registerBtn = $("registerSubmit");
     if (registerBtn) {
@@ -199,8 +199,6 @@ function initAuthForms() {
             }
         });
     }
-}
-
 
 /* ========== MODAL HELPERS (SINGLE SOURCE) ========== */
 function showModal(el) {
