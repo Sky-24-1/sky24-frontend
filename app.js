@@ -34,10 +34,6 @@ function show(el) { if (!el) return; el.classList.remove("hidden"); }
 function hide(el) { if (!el) return; el.classList.add("hidden"); }
 function toast(msg) { alert(msg); } // you can replace with fancier toast later
 
-/* ===== BACKWARD COMPATIBILITY (DO NOT REMOVE) ===== */
-const openModal = showModal;
-const closeModal = hideModal;
-
 /* --------------- API calls --------------- */
 async function apiFetch(url, options = {}) {
     const token = getToken();
@@ -211,6 +207,10 @@ function hideModal(el) {
     el.classList.add("hidden");
     document.body.style.overflow = "";
 }
+
+/* ===== BACKWARD COMPATIBILITY (DO NOT REMOVE) ===== */
+const openModal = showModal;
+const closeModal = hideModal;
 
    // function openModal(el) {
        // if (!el) return;
