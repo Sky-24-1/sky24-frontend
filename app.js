@@ -447,40 +447,37 @@ function initBlocker() {
     const blockerClose = $("blockerClose");
     if (!blocker) return;
 
-    // hide blocker on load (very important)
     hide(blocker);
 
-    // Close popup
-    blockerClose.addEventListener("click", () => {
-        hide(blocker);
-    });
+    if (blockerClose) {
+        blockerClose.onclick = () => hide(blocker);
+    }
 
-    // List of items that require login
-    const restrictedTargets = [
-        "#addPropBtn",
-        ".type-box",
-        ".city-box",
-        ".property-card"
-    ];
-
-    // Global click listener for restricted actions ONLY
     document.addEventListener("click", function (e) {
-        if (getToken()) return;
 
+        // ✅ ALLOW ADD PROPERTY ALWAYS
+        if (e.target.closest("#addPropBtn")) {
+            return;
+        }
+
+        // ✅ ALLOW AUTH BUTTONS
         if (
             e.target.closest("#loginBtn") ||
             e.target.closest("#registerBtn") ||
-            e.target.closest("#openForgot") ||
-            e.target.closest("#addPropBtn")
+            e.target.closest("#openForgot")
         ) {
-            return; // allow auth buttons
+            return;
         }
 
-        for (const selector of restrictedTargets) {
-            if (e.target.closest(selector)) {
+        // ❌ BLOCK ONLY WHEN NOT LOGGED IN
+        if (!getToken()) {
+            if (
+                e.target.closest(".property-card") ||
+                e.target.closest(".type-box") ||
+                e.target.closest(".city-box")
+            ) {
                 e.preventDefault();
                 show(blocker);
-                return;
             }
         }
     });
@@ -590,15 +587,22 @@ function updateNavOnLogin() {
 
 /* ========== ON LOGIN HANDLER ========== */
 function onLogin() {
-    hide($("loginModal")); hide($("registerModal"));
-    qsa(".hero-section, .hero-slider").forEach(x => x.classList.add("hidden"));
+    hide($("loginModal"));
+    hide($("registerModal"));
+
     show($("mainContent"));
     updateNavOnLogin();
 
     const user = getUser();
-    if (user && user.role === "broker") show($("addPropBtn")); else hide($("addPropBtn"));
+    console.log("Logged user:", user); // 🔍 DEBUG
 
-    // load listings from server
+    if (user?.role === "broker") {
+        $("addPropBtn").classList.remove("hidden");
+        console.log("Add Property button shown"); // 🔍
+    } else {
+        $("addPropBtn").classList.add("hidden");
+    }
+
     fetchListings();
 }
 
