@@ -34,19 +34,6 @@ function show(el) { if (!el) return; el.classList.remove("hidden"); }
 function hide(el) { if (!el) return; el.classList.add("hidden"); }
 function toast(msg) { alert(msg); } // you can replace with fancier toast later
 
-/* --------------- Modal helpers --------------- */
-function openModal(el) {
-    if (!el) return;
-    el.classList.remove("hidden");
-    document.body.style.overflow = "hidden";
-}
-
-function closeModal(el) {
-    if (!el) return;
-    el.classList.add("hidden");
-    document.body.style.overflow = "";
-};
-
 /* --------------- API calls --------------- */
 async function apiFetch(url, options = {}) {
     const token = getToken();
@@ -79,7 +66,7 @@ function toggleMobileMenu() {
     document.querySelector(".mobile-menu").classList.toggle("active");
 }
 
-document.body.addEventListener("touchstart", () => {}, { passive: true });
+document.body.addEventListener("touchstart", () => { }, { passive: true });
 /* ========== AUTH (REGISTER / LOGIN) ========== */
 function initAuthForms() {
     // open modal triggers
@@ -174,35 +161,60 @@ function initAuthForms() {
         });
     }
 
-   /* ==========================
-   GLOBAL AUTH BUTTON HANDLER
-========================== */
-document.addEventListener("click", (e) => {
+    /* ==========================
+    GLOBAL AUTH BUTTON HANDLER
+ ========================== */
+    document.addEventListener("click", (e) => {
 
-    if (e.target.closest("#loginBtn")) {
-        openModal($("loginModal"));
+        if (e.target.closest("#loginBtn")) {
+            openModal($("loginModal"));
+        }
+
+        if (e.target.closest("#registerBtn")) {
+            openModal($("registerModal"));
+        }
+
+        if (e.target.closest("#openForgot")) {
+            hide($("loginModal"));
+            show($("forgotModal"));
+        }
+
+        if (e.target.closest("#openRegister")) {
+            closeModal($("loginModal"));
+            openModal($("registerModal"));
+        }
+
+        if (e.target.closest("#openLogin")) {
+            closeModal($("registerModal"));
+            openModal($("loginModal"));
+        }
+
+    });
+
+    /* ==============================
+    GLOBAL MODAL HANDLER
+ ============================== */
+
+    function openModal(el) {
+        if (!el) return;
+        el.classList.remove("hidden");
+        document.body.style.overflow = "hidden";
     }
 
-    if (e.target.closest("#registerBtn")) {
-        openModal($("registerModal"));
+    function closeModal(el) {
+        if (!el) return;
+        el.classList.add("hidden");
+        document.body.style.overflow = "";
     }
 
-    if (e.target.closest("#openForgot")) {
-        hide($("loginModal"));
-        show($("forgotModal"));
-    }
+    // Close modal by ✕ button
+    document.addEventListener("click", (e) => {
+        const closeBtn = e.target.closest("[data-close]");
+        if (!closeBtn) return;
 
-    if (e.target.closest("#openRegister")) {
-        closeModal($("loginModal"));
-        openModal($("registerModal"));
-    }
-
-    if (e.target.closest("#openLogin")) {
-        closeModal($("registerModal"));
-        openModal($("loginModal"));
-    }
-
-});
+        const id = closeBtn.getAttribute("data-close");
+        closeModal(document.getElementById(id));
+    });
 
     function initResetPasswordPage() {
         const btn = document.getElementById("resetBtn");
@@ -479,15 +491,6 @@ function initBlocker() {
     });
 }
 
-// Close modal by ✕ button
-document.addEventListener("click", (e) => {
-    const closeBtn = e.target.closest("[data-close]");
-    if (!closeBtn) return;
-
-    const id = closeBtn.getAttribute("data-close");
-    closeModal(document.getElementById(id));
-});
-
 /* ========== STICKY BAR (as before) ========== */
 function initStickyBar() {
     const bar = qs(".actions-bar");
@@ -587,6 +590,7 @@ function updateNavOnLogin() {
         adminBtn.onclick = openAdminDashboard;
     }
 
+    initAddPropertyModal();
 }
 
 if (openAdminBtn) {
@@ -962,14 +966,15 @@ renderListings = function (listings) {
     originalRenderListings(listings);
 
     document.querySelectorAll(".property-card").forEach((card, i) => {
-        card.addEventListener("click", () => {
+        card.addEventListener("click", (e) => {
+            if (e.target.closest("button")) return;
+
             if (!getToken()) {
                 show($("blocker"));
                 return;
             }
             openPropertyDetails(listings[i]);
         });
-
     });
 };
 
