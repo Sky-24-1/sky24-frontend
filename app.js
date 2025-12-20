@@ -67,6 +67,37 @@ function toggleMobileMenu() {
 }
 
 document.body.addEventListener("touchstart", () => { }, { passive: true });
+
+    /* ==========================
+    GLOBAL AUTH BUTTON HANDLER
+ ========================== */
+    document.addEventListener("click", (e) => {
+
+        if (e.target.closest("#loginBtn")) {
+            openModal($("loginModal"));
+        }
+
+        if (e.target.closest("#registerBtn")) {
+            openModal($("registerModal"));
+        }
+
+        if (e.target.closest("#openForgot")) {
+            hide($("loginModal"));
+            show($("forgotModal"));
+        }
+
+        if (e.target.closest("#openRegister")) {
+            closeModal($("loginModal"));
+            openModal($("registerModal"));
+        }
+
+        if (e.target.closest("#openLogin")) {
+            closeModal($("registerModal"));
+            openModal($("loginModal"));
+        }
+
+    });
+
 /* ========== AUTH (REGISTER / LOGIN) ========== */
 function initAuthForms() {
     // open modal triggers
@@ -160,42 +191,10 @@ function initAuthForms() {
             }
         });
     }
+}
 
-    /* ==========================
-    GLOBAL AUTH BUTTON HANDLER
- ========================== */
-    document.addEventListener("click", (e) => {
 
-        if (e.target.closest("#loginBtn")) {
-            openModal($("loginModal"));
-        }
-
-        if (e.target.closest("#registerBtn")) {
-            openModal($("registerModal"));
-        }
-
-        if (e.target.closest("#openForgot")) {
-            hide($("loginModal"));
-            show($("forgotModal"));
-        }
-
-        if (e.target.closest("#openRegister")) {
-            closeModal($("loginModal"));
-            openModal($("registerModal"));
-        }
-
-        if (e.target.closest("#openLogin")) {
-            closeModal($("registerModal"));
-            openModal($("loginModal"));
-        }
-
-    });
-
-    /* ==============================
-    GLOBAL MODAL HANDLER
- ============================== */
-
-   /* ========== MODAL HELPERS (SINGLE SOURCE) ========== */
+/* ========== MODAL HELPERS (SINGLE SOURCE) ========== */
 function showModal(el) {
     if (!el) return;
     el.classList.remove("hidden");
@@ -476,12 +475,10 @@ function initBlocker() {
 
     document.addEventListener("click", function (e) {
 
-        // ✅ ALLOW ADD PROPERTY ALWAYS
-        if (e.target.closest("#addPropBtn")) {
-            return;
-        }
+        // ✅ If logged in → NEVER block anything
+        if (getToken()) return;
 
-        // ✅ ALLOW AUTH BUTTONS
+        // ✅ Allow auth buttons always
         if (
             e.target.closest("#loginBtn") ||
             e.target.closest("#registerBtn") ||
@@ -490,15 +487,19 @@ function initBlocker() {
             return;
         }
 
-        // ❌ BLOCK ONLY WHEN NOT LOGGED IN
-        if (!getToken()) {
-            if (
-                e.target.closest(".property-card") ||
-                e.target.closest(".type-box") ||
-                e.target.closest(".city-box")
-            ) {
+        // ❌ Block Add Property ONLY when NOT logged in
+        if (e.target.closest("#addPropBtn")) {
+            e.preventDefault();
+            show(blocker);
+            return;
+        }
+
+        // ❌ Block restricted content for guests
+        for (const selector of restrictedTargets) {
+            if (e.target.closest(selector)) {
                 e.preventDefault();
                 show(blocker);
+                return;
             }
         }
     });
@@ -573,7 +574,6 @@ function updateNavOnLogin() {
             <button id="registerBtn" class="btn ghost neon-border">Register</button>
             <button id="openAdminBtn" class="btn neon hidden">Admin Panel</button>
         `;
-        initAuthForms();
         return;
     }
 
@@ -602,8 +602,6 @@ function updateNavOnLogin() {
     if (adminBtn) {
         adminBtn.onclick = openAdminDashboard;
     }
-
-    initAddPropertyModal();
 }
 
 /* ========== ON LOGIN HANDLER ========== */
