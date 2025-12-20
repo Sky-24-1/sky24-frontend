@@ -35,16 +35,17 @@ function hide(el) { if (!el) return; el.classList.add("hidden"); }
 function toast(msg) { alert(msg); } // you can replace with fancier toast later
 
 /* --------------- Modal helpers --------------- */
-function openModal(el) { if (!el) return; el.classList.remove("hidden"); }
-function closeModal(el) { if (!el) return; el.classList.add("hidden"); }
-qsa(".close-modal").forEach(c => c.addEventListener("click", () => {
-    const id = c.dataset.close;
-    if (id && $(id)) closeModal($(id));
-    else {
-        const modal = c.closest(".dark-modal");
-        if (modal) closeModal(modal);
-    }
-}));
+function openModal(el) {
+    if (!el) return;
+    el.classList.remove("hidden");
+    document.body.style.overflow = "hidden";
+}
+
+function closeModal(el) {
+    if (!el) return;
+    el.classList.add("hidden");
+    document.body.style.overflow = "";
+};
 
 /* --------------- API calls --------------- */
 async function apiFetch(url, options = {}) {
@@ -333,27 +334,27 @@ function escapeHtml(s) {
     return s.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
 }
 
-/* ========== ADD PROPERTY (ADVANCED - BROKER ONLY) ========== */
-
+/* ========== ADD PROPERTY (BROKER ONLY) ========== */
 function initAddPropertyModal() {
-    const addBtn = $("addPropBtn");
     const modal = $("addPropertyModal");
-    const submitBtn = $("submitProperty");
+    if (!modal) return;
 
-    if (!addBtn || !modal || !submitBtn) return;
+    // 🔹 OPEN (desktop + mobile safe)
+    document.addEventListener("click", (e) => {
+        const btn = e.target.closest("#addPropBtn");
+        if (!btn) return;
 
-    // Open modal
-    addBtn.addEventListener("click", () => {
         const user = getUser();
         if (!user || user.role !== "broker") {
-            toast("Only brokers can add properties");
+            toast("Only brokers can add property");
             return;
         }
-        show(modal);
+
+        openModal(modal);
     });
 
-    // Submit property
-    submitBtn.addEventListener("click", async () => {
+    // 🔹 SUBMIT
+    $("submitProperty")?.addEventListener("click", async () => {
         try {
             const user = getUser();
             if (!user || user.role !== "broker") {
@@ -363,21 +364,19 @@ function initAddPropertyModal() {
 
             const fd = new FormData();
 
-            // Location
+            // LOCATION
             fd.append("state", $("ap_state").value.trim());
             fd.append("city", $("ap_city").value.trim());
             fd.append("pincode", $("ap_pincode").value.trim());
             fd.append("area", $("ap_area").value.trim());
             fd.append("address", $("ap_address").value.trim());
 
-            const pincode = $("ap_pincode").value.trim();
-
-            if (!/^[0-9]{6}$/.test(pincode)) {
+            if (!/^[0-9]{6}$/.test($("ap_pincode").value.trim())) {
                 toast("Enter valid 6-digit pincode");
                 return;
             }
 
-            // Property details
+            // PROPERTY
             fd.append("propertyType", $("ap_type").value);
             fd.append("mode", $("ap_mode").value);
             fd.append("price", $("ap_price").value);
@@ -387,59 +386,51 @@ function initAddPropertyModal() {
             fd.append("totalFloors", $("ap_total_floors").value);
             fd.append("bedrooms", $("ap_bedrooms").value);
             fd.append("bathrooms", $("ap_bathrooms").value);
-            fd.append("MobileNumber", $("ap_mobile_number").value.trim());
+            fd.append("MobileNumber", $("ap_mobile_number").value);
             fd.append("description", $("ap_desc").value);
+            fd.append("ownerName", $("ap_owner_name").value);
 
-            // Owner
-            fd.append("ownerName", $("ap_owner_name").value.trim());
-
-            // Photos (required)
+            // PHOTOS
             const mainPhoto = $("ap_main_photo").files[0];
             if (!mainPhoto) {
-                toast("Main photo is required");
+                toast("Main photo required");
                 return;
             }
             fd.append("mainPhoto", mainPhoto);
 
-            // Optional photos
             if ($("ap_hall_photo").files[0])
                 fd.append("hallPhoto", $("ap_hall_photo").files[0]);
 
             if ($("ap_kitchen_photo").files[0])
                 fd.append("kitchenPhoto", $("ap_kitchen_photo").files[0]);
 
-            for (const f of $("ap_bedroom_photos").files)
-                fd.append("bedroomPhotos", f);
+            [...$("ap_bedroom_photos").files].forEach(f => fd.append("bedroomPhotos", f));
+            [...$("ap_bathroom_photos").files].forEach(f => fd.append("bathroomPhotos", f));
 
-            for (const f of $("ap_bathroom_photos").files)
-                fd.append("bathroomPhotos", f);
-
-            submitBtn.disabled = true;
-            submitBtn.textContent = "Uploading...";
+            $("submitProperty").disabled = true;
+            $("submitProperty").textContent = "Uploading...";
 
             const res = await fetch(`${API_BASE}/api/listings`, {
                 method: "POST",
-                headers: {
-                    Authorization: `Bearer ${getToken()}`
-                },
+                headers: { Authorization: `Bearer ${getToken()}` },
                 body: fd
             });
 
             const data = await res.json();
 
-            submitBtn.disabled = false;
-            submitBtn.textContent = "Submit Property";
+            $("submitProperty").disabled = false;
+            $("submitProperty").textContent = "Submit Property";
 
             if (!res.ok) throw new Error(data.error || "Upload failed");
 
             toast("Property added successfully");
-            hide(modal);
+            closeModal(modal);
             fetchListings();
 
         } catch (err) {
-            submitBtn.disabled = false;
-            submitBtn.textContent = "Submit Property";
-            toast(err.message || "Property upload error");
+            $("submitProperty").disabled = false;
+            $("submitProperty").textContent = "Submit Property";
+            toast(err.message || "Upload error");
         }
     });
 }
@@ -472,7 +463,8 @@ function initBlocker() {
         if (
             e.target.closest("#loginBtn") ||
             e.target.closest("#registerBtn") ||
-            e.target.closest("#openForgot")
+            e.target.closest("#openForgot") ||
+            e.target.closest("#addPropBtn")
         ) {
             return; // allow auth buttons
         }
@@ -486,6 +478,15 @@ function initBlocker() {
         }
     });
 }
+
+// Close modal by ✕ button
+document.addEventListener("click", (e) => {
+    const closeBtn = e.target.closest("[data-close]");
+    if (!closeBtn) return;
+
+    const id = closeBtn.getAttribute("data-close");
+    closeModal(document.getElementById(id));
+});
 
 /* ========== STICKY BAR (as before) ========== */
 function initStickyBar() {
