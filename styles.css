@@ -527,7 +527,7 @@ body {
     backdrop-filter: blur(6px);
     transition: 0.3s ease;
     position: relative;
-    pointer-events: none;
+    pointer-events: auto;
 }
 
 .actions-bar.sticky {
@@ -539,14 +539,6 @@ body {
     z-index: 250;
     width: auto;
     border-radius: 14px;
-}
-
-.actions-bar {
-    pointer-events: none;
-}
-
-.actions-bar button {
-    pointer-events: auto; /* ✅ allow clicks */
 }
 
 .listings-grid {
