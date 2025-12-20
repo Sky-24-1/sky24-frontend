@@ -34,6 +34,14 @@ function show(el) { if (!el) return; el.classList.remove("hidden"); }
 function hide(el) { if (!el) return; el.classList.add("hidden"); }
 function toast(msg) { alert(msg); } // you can replace with fancier toast later
 
+/* ===== SAFE RESTRICTED TARGETS (FIX) ===== */
+const restrictedTargets = [
+    ".property-card",
+    "#viewBrokerListings",
+    "#searchLocationBtn",
+    "#searchTypeBtn"
+];
+
 /* --------------- API calls --------------- */
 async function apiFetch(url, options = {}) {
     const token = getToken();
@@ -364,9 +372,11 @@ function escapeHtml(s) {
 
 /* ========== ADD PROPERTY (BROKER ONLY) ========== */
 function initAddPropertyModal() {
-    const modal = document.getElementById("addPropertyModal");
-    if (!modal) return;
+    const modal = $("addPropertyModal");
+    const submitBtn = $("submitProperty");
+    if (!modal || !submitBtn) return;
 
+    // OPEN MODAL
     document.addEventListener("click", (e) => {
         const btn = e.target.closest("#addPropBtn");
         if (!btn) return;
@@ -376,13 +386,11 @@ function initAddPropertyModal() {
             toast("Only brokers can add property");
             return;
         }
-       
-       showModal(modal); // ✅ FIXED
+
+        showModal(modal);
     });
 
-    const submitBtn = document.getElementById("submitProperty");
-    if (!submitBtn) return;
-
+    // SUBMIT PROPERTY
     submitBtn.addEventListener("click", async () => {
         try {
             const user = getUser();
@@ -393,16 +401,17 @@ function initAddPropertyModal() {
 
             const fd = new FormData();
 
-            fd.append("state", $("ap_state").value.trim());
-            fd.append("city", $("ap_city").value.trim());
-            fd.append("pincode", $("ap_pincode").value.trim());
-            fd.append("area", $("ap_area").value.trim());
-            fd.append("address", $("ap_address").value.trim());
-
-            if (!/^[0-9]{6}$/.test($("ap_pincode").value.trim())) {
+            const pincode = $("ap_pincode").value.trim();
+            if (!/^[0-9]{6}$/.test(pincode)) {
                 toast("Enter valid 6-digit pincode");
                 return;
             }
+
+            fd.append("state", $("ap_state").value.trim());
+            fd.append("city", $("ap_city").value.trim());
+            fd.append("pincode", pincode);
+            fd.append("area", $("ap_area").value.trim());
+            fd.append("address", $("ap_address").value.trim());
 
             fd.append("propertyType", $("ap_type").value);
             fd.append("mode", $("ap_mode").value);
@@ -419,16 +428,13 @@ function initAddPropertyModal() {
 
             const mainPhoto = $("ap_main_photo").files[0];
             if (!mainPhoto) {
-                toast("Main photo required");
+                toast("Main photo is required");
                 return;
             }
             fd.append("mainPhoto", mainPhoto);
 
-            if ($("ap_hall_photo").files[0])
-                fd.append("hallPhoto", $("ap_hall_photo").files[0]);
-
-            if ($("ap_kitchen_photo").files[0])
-                fd.append("kitchenPhoto", $("ap_kitchen_photo").files[0]);
+            $("ap_hall_photo").files[0] && fd.append("hallPhoto", $("ap_hall_photo").files[0]);
+            $("ap_kitchen_photo").files[0] && fd.append("kitchenPhoto", $("ap_kitchen_photo").files[0]);
 
             [...$("ap_bedroom_photos").files].forEach(f => fd.append("bedroomPhotos", f));
             [...$("ap_bathroom_photos").files].forEach(f => fd.append("bathroomPhotos", f));
@@ -450,7 +456,7 @@ function initAddPropertyModal() {
             if (!res.ok) throw new Error(data.error || "Upload failed");
 
             toast("Property added successfully");
-            hideModal(modal); // ✅ FIXED
+            hideModal(modal);
             fetchListings();
 
         } catch (err) {
@@ -469,25 +475,21 @@ function initBlocker() {
 
     hide(blocker);
 
-    if (blockerClose) {
-        blockerClose.onclick = () => hide(blocker);
-    }
+    blockerClose?.addEventListener("click", () => hide(blocker));
 
-    document.addEventListener("click", function (e) {
+    document.addEventListener("click", (e) => {
 
-        // ✅ If logged in → NEVER block anything
-        if (getToken()) return;
+        // ✅ Logged-in users: NEVER block anything
+        if (getToken() && getUser()) return;
 
-        // ✅ Allow auth buttons always
+        // ✅ Always allow auth actions
         if (
             e.target.closest("#loginBtn") ||
             e.target.closest("#registerBtn") ||
             e.target.closest("#openForgot")
-        ) {
-            return;
-        }
+        ) return;
 
-        // ❌ Block Add Property ONLY when NOT logged in
+        // ❌ Block Add Property for guests
         if (e.target.closest("#addPropBtn")) {
             e.preventDefault();
             show(blocker);
