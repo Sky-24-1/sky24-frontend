@@ -348,25 +348,24 @@ function escapeHtml(s) {
 
 /* ========== ADD PROPERTY (BROKER ONLY) ========== */
 function initAddPropertyModal() {
+    const addBtn = $("addPropBtn");
     const modal = $("addPropertyModal");
     const submitBtn = $("submitProperty");
-    if (!modal || !submitBtn) return;
 
-    // ✅ OPEN MODAL (direct binding, no delegation conflict)
-    const addBtn = $("addPropBtn");
-    if (addBtn) {
-        addBtn.onclick = () => {
-            const user = getUser();
-            if (!user || user.role !== "broker") {
-                toast("Only brokers can add property");
-                return;
-            }
-            openModal(modal);
-        };
-    }
+    if (!addBtn || !modal || !submitBtn) return;
 
-    // ✅ SUBMIT PROPERTY
-    submitBtn.onclick = async () => {
+    // Open modal
+    addBtn.addEventListener("click", () => {
+        const user = getUser();
+        if (!user || user.role !== "broker") {
+            toast("Only brokers can add properties");
+            return;
+        }
+        show(modal);
+    });
+
+    // Submit property
+    submitBtn.addEventListener("click", async () => {
         try {
             const user = getUser();
             if (!user || user.role !== "broker") {
@@ -376,17 +375,21 @@ function initAddPropertyModal() {
 
             const fd = new FormData();
 
+            // Location
             fd.append("state", $("ap_state").value.trim());
             fd.append("city", $("ap_city").value.trim());
             fd.append("pincode", $("ap_pincode").value.trim());
             fd.append("area", $("ap_area").value.trim());
             fd.append("address", $("ap_address").value.trim());
 
-            if (!/^[0-9]{6}$/.test($("ap_pincode").value.trim())) {
+            const pincode = $("ap_pincode").value.trim();
+
+            if (!/^[0-9]{6}$/.test(pincode)) {
                 toast("Enter valid 6-digit pincode");
                 return;
             }
 
+            // Property details
             fd.append("propertyType", $("ap_type").value);
             fd.append("mode", $("ap_mode").value);
             fd.append("price", $("ap_price").value);
@@ -396,29 +399,41 @@ function initAddPropertyModal() {
             fd.append("totalFloors", $("ap_total_floors").value);
             fd.append("bedrooms", $("ap_bedrooms").value);
             fd.append("bathrooms", $("ap_bathrooms").value);
-            fd.append("MobileNumber", $("ap_mobile_number").value);
+            fd.append("MobileNumber", $("ap_mobile_number").value.trim());
             fd.append("description", $("ap_desc").value);
-            fd.append("ownerName", $("ap_owner_name").value);
 
+            // Owner
+            fd.append("ownerName", $("ap_owner_name").value.trim());
+
+            // Photos (required)
             const mainPhoto = $("ap_main_photo").files[0];
             if (!mainPhoto) {
-                toast("Main photo required");
+                toast("Main photo is required");
                 return;
             }
             fd.append("mainPhoto", mainPhoto);
 
-            if ($("ap_hall_photo").files[0]) fd.append("hallPhoto", $("ap_hall_photo").files[0]);
-            if ($("ap_kitchen_photo").files[0]) fd.append("kitchenPhoto", $("ap_kitchen_photo").files[0]);
+            // Optional photos
+            if ($("ap_hall_photo").files[0])
+                fd.append("hallPhoto", $("ap_hall_photo").files[0]);
 
-            [...$("ap_bedroom_photos").files].forEach(f => fd.append("bedroomPhotos", f));
-            [...$("ap_bathroom_photos").files].forEach(f => fd.append("bathroomPhotos", f));
+            if ($("ap_kitchen_photo").files[0])
+                fd.append("kitchenPhoto", $("ap_kitchen_photo").files[0]);
+
+            for (const f of $("ap_bedroom_photos").files)
+                fd.append("bedroomPhotos", f);
+
+            for (const f of $("ap_bathroom_photos").files)
+                fd.append("bathroomPhotos", f);
 
             submitBtn.disabled = true;
             submitBtn.textContent = "Uploading...";
 
-            const res = await fetch(`${API_BASE}/api/listings`, {
+            const res = await fetch(`${BASE_URL}/api/listings`, {
                 method: "POST",
-                headers: { Authorization: `Bearer ${getToken()}` },
+                headers: {
+                    Authorization: `Bearer ${getToken()}`
+                },
                 body: fd
             });
 
@@ -430,15 +445,15 @@ function initAddPropertyModal() {
             if (!res.ok) throw new Error(data.error || "Upload failed");
 
             toast("Property added successfully");
-            closeModal(modal);
+            hide(modal);
             fetchListings();
 
         } catch (err) {
             submitBtn.disabled = false;
             submitBtn.textContent = "Submit Property";
-            toast(err.message || "Upload error");
+            toast(err.message || "Property upload error");
         }
-    };
+    });
 }
 
 /* ========== BLOCKER (prevent actions for anon) ========== */
@@ -457,6 +472,7 @@ function initBlocker() {
 
     // List of items that require login
     const restrictedTargets = [
+        "#addPropBtn",
         ".type-box",
         ".city-box",
         ".property-card"
