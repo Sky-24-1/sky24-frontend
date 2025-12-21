@@ -561,23 +561,37 @@ function initSlider() {
     startAuto();
 }
 
-/* ========== ON LOGIN UI STATE ========== */
+/* ========== ON LOGIN UI STATE (DESKTOP + MOBILE SAFE) ========== */
 function updateNavOnLogin() {
-    const nav = qs(".nav-actions");
-    if (!nav) return;
+    const desktop = document.getElementById("desktopActions");
+    const mobile = document.getElementById("mobileActions");
+
+    if (!desktop || !mobile) return;
 
     const user = getUser();
 
+    /* ---------- LOGGED OUT ---------- */
     if (!user) {
-        nav.innerHTML = `
+        desktop.innerHTML = `
             <button id="loginBtn" class="btn neon">Login</button>
             <button id="registerBtn" class="btn ghost neon-border">Register</button>
             <button id="openAdminBtn" class="btn neon hidden">Admin Panel</button>
+            <p class="swap-text">
+                <span id="openForgot">Forgot<br>password?</span>
+            </p>
+        `;
+
+        mobile.innerHTML = `
+            <button id="loginBtn" class="btn neon">Login</button>
+            <button id="registerBtn" class="btn ghost neon-border">Register</button>
+            <button id="openAdminBtn" class="btn neon hidden">Admin Panel</button>
+            <p id="openForgot" class="forgot-link">Forgot password?</p>
         `;
         return;
     }
 
-    nav.innerHTML = `
+    /* ---------- LOGGED IN ---------- */
+    desktop.innerHTML = `
         <div style="display:flex;gap:12px;align-items:center">
             <div style="color:#bcd8ff">Hi, ${escapeHtml(user.username)}</div>
             <button id="logoutBtn" class="btn ghost">Logout</button>
@@ -585,22 +599,29 @@ function updateNavOnLogin() {
         </div>
     `;
 
-    $("logoutBtn").onclick = () => {
-        clearAuth();
-        location.reload();
-    };
+    mobile.innerHTML = `
+        <div style="display:flex;flex-direction:column;gap:12px">
+            <div style="color:#bcd8ff;text-align:center">
+                Hi, ${escapeHtml(user.username)}
+            </div>
+            <button id="logoutBtn" class="btn ghost">Logout</button>
+            <button id="openAdminBtn" class="btn neon hidden">Admin Panel</button>
+        </div>
+    `;
 
-    // ✅ SHOW ADMIN ONLY FOR FOUNDER
+    /* ---------- LOGOUT ---------- */
+    document.querySelectorAll("#logoutBtn").forEach(btn => {
+        btn.onclick = () => {
+            clearAuth();
+            location.reload();
+        };
+    });
+
+    /* ---------- ADMIN (FOUNDER ONLY) ---------- */
     if (user.role === "founder") {
-        $("openAdminBtn").classList.remove("hidden");
-    } else {
-        $("openAdminBtn").classList.add("hidden");
-    }
-
-    // ✅ Attach admin click AFTER button exists
-    const adminBtn = $("openAdminBtn");
-    if (adminBtn) {
-        adminBtn.onclick = openAdminDashboard;
+        document.querySelectorAll("#openAdminBtn").forEach(btn =>
+            btn.classList.remove("hidden")
+        );
     }
 }
 
