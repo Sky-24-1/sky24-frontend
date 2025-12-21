@@ -561,66 +561,65 @@ function initSlider() {
     startAuto();
 }
 
-/* ========== ON LOGIN UI STATE (DESKTOP + MOBILE SAFE) ========== */
+/* ========== ON LOGIN UI STATE ========== */
 function updateNavOnLogin() {
-    const desktop = document.getElementById("desktopActions");
-    const mobile = document.getElementById("mobileActions");
-
-    if (!desktop || !mobile) return;
-
+    const desktopActions = document.getElementById("desktopActions");
+    const mobileActions = document.getElementById("mobileActions");
     const user = getUser();
 
-    /* ---------- LOGGED OUT ---------- */
+    if (!desktopActions || !mobileActions) return;
+
+    /* ---------- NOT LOGGED IN ---------- */
     if (!user) {
-        desktop.innerHTML = `
+        desktopActions.innerHTML = `
             <button id="loginBtn" class="btn neon">Login</button>
             <button id="registerBtn" class="btn ghost neon-border">Register</button>
-            <button id="openAdminBtn" class="btn neon hidden">Admin Panel</button>
-            <p class="swap-text">
-                <span id="openForgot">Forgot<br>password?</span>
-            </p>
         `;
 
-        mobile.innerHTML = `
+        mobileActions.innerHTML = `
             <button id="loginBtn" class="btn neon">Login</button>
             <button id="registerBtn" class="btn ghost neon-border">Register</button>
-            <button id="openAdminBtn" class="btn neon hidden">Admin Panel</button>
             <p id="openForgot" class="forgot-link">Forgot password?</p>
         `;
         return;
     }
+
     /* ---------- LOGGED IN ---------- */
-    desktop.innerHTML = `
+    desktopActions.innerHTML = `
         <div style="display:flex;gap:12px;align-items:center">
-            <div style="color:#bcd8ff">Hi, ${escapeHtml(user.username)}</div>
+            <span style="color:#bcd8ff">Hi, ${escapeHtml(user.username)}</span>
             <button id="logoutBtn" class="btn ghost">Logout</button>
             <button id="openAdminBtn" class="btn neon hidden">Admin Panel</button>
         </div>
     `;
 
-    mobile.innerHTML = `
-        <div style="display:flex;flex-direction:column;gap:12px">
-            <div style="color:#bcd8ff;text-align:center">
-                Hi, ${escapeHtml(user.username)}
-            </div>
-            <button id="logoutBtn" class="btn ghost">Logout</button>
-            <button id="openAdminBtn" class="btn neon hidden">Admin Panel</button>
-        </div>
+    mobileActions.innerHTML = `
+        <span style="color:#bcd8ff;text-align:center">Hi, ${escapeHtml(user.username)}</span>
+        <button id="logoutBtnMobile" class="btn ghost">Logout</button>
+        <button id="openAdminBtnMobile" class="btn neon hidden">Admin Panel</button>
     `;
 
     /* ---------- LOGOUT ---------- */
-    document.querySelectorAll("#logoutBtn").forEach(btn => {
-        btn.onclick = () => {
-            clearAuth();
-            location.reload();
-        };
+    document.getElementById("logoutBtn")?.addEventListener("click", () => {
+        clearAuth();
+        location.reload();
     });
 
-    /* ---------- ADMIN (FOUNDER ONLY) ---------- */
+    document.getElementById("logoutBtnMobile")?.addEventListener("click", () => {
+        clearAuth();
+        location.reload();
+    });
+
+    /* ---------- ADMIN ACCESS (FOUNDER ONLY) ---------- */
     if (user.role === "founder") {
-        document.querySelectorAll("#openAdminBtn").forEach(btn =>
-            btn.classList.remove("hidden")
-        );
+        document.getElementById("openAdminBtn")?.classList.remove("hidden");
+        document.getElementById("openAdminBtnMobile")?.classList.remove("hidden");
+
+        document.getElementById("openAdminBtn")?.addEventListener("click", openAdminDashboard);
+        document.getElementById("openAdminBtnMobile")?.addEventListener("click", () => {
+            document.getElementById("mobileMenu")?.classList.remove("active");
+            openAdminDashboard();
+        });
     }
 }
 
