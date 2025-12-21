@@ -589,7 +589,6 @@ function updateNavOnLogin() {
         `;
         return;
     }
-
     /* ---------- LOGGED IN ---------- */
     desktop.innerHTML = `
         <div style="display:flex;gap:12px;align-items:center">
@@ -840,6 +839,7 @@ function init() {
     // placeholders for floating labels
     qsa(".input-box input, .input-box select").forEach(i => { if (!i.hasAttribute("placeholder")) i.setAttribute("placeholder", " "); });
 
+    updateNavOnLogin();
     initAuthForms();
     initBlocker();
     initSlider();
