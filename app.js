@@ -210,10 +210,10 @@ function initAuthForms() {
                 alert("Registration successful");
 
             } catch (err) {
-                registerBtn.disabled = false;
-                registerBtn.textContent = "Register";
-                alert(err.message || "Registration error");
+              console.error("REGISTER ERROR:", err);
+              alert(err.message || "Registration error");
             }
+
         });
     }
 
