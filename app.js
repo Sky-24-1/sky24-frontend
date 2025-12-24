@@ -574,6 +574,7 @@ function updateNavOnLogin() {
         desktopActions.innerHTML = `
             <button id="loginBtn" class="btn neon">Login</button>
             <button id="registerBtn" class="btn ghost neon-border">Register</button>
+            <span id="openForgot" class="forgot-link">Forgot password?</span>
         `;
 
         mobileActions.innerHTML = `
@@ -768,16 +769,8 @@ function setupTypeSearch() {
 }
 
 function initForgotPassword() {
-    const openForgot = $("openForgot");
     const forgotModal = $("forgotModal");
     const resetModal = $("resetModal");
-
-    if (!openForgot) return;
-
-    openForgot.addEventListener("click", () => {
-        hide($("loginModal"));
-        show(forgotModal);
-    });
 
     $("forgotSubmit").addEventListener("click", async () => {
         const email = $("forgotEmail").value.trim();
@@ -1309,4 +1302,9 @@ async function loadPendingBrokers() {
 //$("openAdminBtn")?.addEventListener("click", openAdminDashboard);
 
 /* ========== RUN ON DOM READY ========== */
+document.addEventListener("DOMContentLoaded", () => {
+    initForgotPassword();
+});
 document.addEventListener("DOMContentLoaded", init);
+
+
