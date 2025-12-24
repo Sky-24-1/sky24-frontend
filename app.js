@@ -238,54 +238,6 @@ function initAuthForms() {
         closeModal(document.getElementById(id));
     });
 
-    function initResetPasswordPage() {
-        const btn = document.getElementById("resetBtn");
-        if (!btn) return;
-
-        const params = new URLSearchParams(window.location.search);
-        const token = params.get("token");
-
-        if (!token) {
-            document.getElementById("resetMsg").textContent = "Invalid reset link";
-            btn.disabled = true;
-            return;
-        }
-
-        btn.addEventListener("click", async () => {
-            const pw1 = document.getElementById("newPassword").value.trim();
-            const pw2 = document.getElementById("confirmPassword").value.trim();
-
-            if (!pw1 || !pw2) {
-                alert("Enter both passwords");
-                return;
-            }
-
-            if (pw1 !== pw2) {
-                alert("Passwords do not match");
-                return;
-            }
-
-            const res = await fetch(`${API_BASE}/api/reset-password`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    token,
-                    newPassword: pw1
-                })
-            });
-
-            const data = await res.json();
-
-            if (!res.ok) {
-                alert(data.error || "Reset failed");
-                return;
-            }
-
-            alert("Password reset successful. You can now login.");
-            window.location.href = "index.html";
-        });
-    }
-
     // LOGIN
     const loginBtnSubmit = $("loginSubmit");
     if (loginBtnSubmit) {
@@ -772,7 +724,8 @@ function initForgotPassword() {
     const forgotModal = $("forgotModal");
     const resetModal = $("resetModal");
 
-    $("forgotSubmit").addEventListener("click", async () => {
+    // SEND RESET LINK
+    $("forgotSubmit")?.addEventListener("click", async () => {
         const email = $("forgotEmail").value.trim();
         if (!email) return toast("Email required");
 
@@ -786,16 +739,17 @@ function initForgotPassword() {
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || "Request failed");
 
-            toast("Reset token sent to email");
-            hide(forgotModal);
-            show(resetModal);
+            toast("Reset link sent to your email");
+            hide(forgotModal);     // ✅ ONLY close forgot modal
+            // ❌ DO NOT open reset modal here
 
         } catch (err) {
             toast(err.message);
         }
     });
 
-    $("resetSubmit").addEventListener("click", async () => {
+    // RESET PASSWORD
+    $("resetSubmit")?.addEventListener("click", async () => {
         const token = $("resetToken").value.trim();
         const newPassword = $("resetPassword").value.trim();
 
@@ -813,18 +767,35 @@ function initForgotPassword() {
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || "Reset failed");
 
-            localStorage.setItem("token", data.token);
-            localStorage.setItem("user", JSON.stringify(data.user));
+            saveToken(data.token);
+            saveUser(data.user);
 
             toast("Password updated & logged in");
             hide(resetModal);
             onLogin();
+
+            // clean URL
+            window.history.replaceState({}, document.title, "/");
 
         } catch (err) {
             toast(err.message);
         }
     });
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+    const token = getQueryParam("token");
+
+    if (token) {
+        const resetModal = $("resetModal");
+        const resetTokenInput = $("resetToken");
+
+        if (resetModal && resetTokenInput) {
+            resetTokenInput.value = token;
+            show(resetModal);
+        }
+    }
+});
 
 /* ========== INIT (boot) ========== */
 function init() {
@@ -1296,15 +1267,15 @@ async function loadPendingBrokers() {
     });
 })();
 
+function getQueryParam(name) {
+    const params = new URLSearchParams(window.location.search);
+    return params.get(name);
+}
+
 /* ---------------------------
    ADMIN ACCESS BUTTON
 --------------------------- */
 //$("openAdminBtn")?.addEventListener("click", openAdminDashboard);
 
 /* ========== RUN ON DOM READY ========== */
-document.addEventListener("DOMContentLoaded", () => {
-    initForgotPassword();
-});
 document.addEventListener("DOMContentLoaded", init);
-
-
