@@ -281,14 +281,21 @@ function initAuthForms() {
 /* ========== FETCH / RENDER LISTINGS ========== */
 let serverListings = []; // holds listings from server
 
-async function fetchListings() {
+async function fetchListings(filters = {}) {
     try {
-        const j = await apiFetch("/api/listings", { method: "GET" });
-        serverListings = j.listings || [];
-        renderListings(serverListings);
-    } catch (e) {
-        console.error("fetchListings", e);
-        renderListings([]); // show empty
+        const params = new URLSearchParams(filters).toString();
+        const res = await fetch(`${API_BASE}/api/listings?${params}`);
+        const data = await res.json();
+
+        if (!res.ok) throw new Error(data.error || "Failed to load listings");
+
+        // 🔥 ALWAYS RENDER FRESH DATA
+        renderListings(data.listings || []);
+
+    } catch (err) {
+        console.error("fetchListings error:", err);
+        toast("Unable to load listings. Please try again.");
+        renderListings([]);
     }
 }
 
@@ -300,7 +307,7 @@ function renderListings(list = []) {
         el.innerHTML = `<div class="property-card">No listings yet.</div>`;
         return;
     }
-    list.forEach(item => {
+    list.filter(item => item && item._id).forEach(item => {
         const card = document.createElement("div");
         card.className = "property-card fancy-hover";
         const mainPhotoPath = item.photos?.main;
