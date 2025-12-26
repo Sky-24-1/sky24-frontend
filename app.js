@@ -303,7 +303,11 @@ function renderListings(list = []) {
     list.forEach(item => {
         const card = document.createElement("div");
         card.className = "property-card fancy-hover";
-        const imgSrc = item.mainPhoto ? `${API_BASE}/${item.mainPhoto.replace(/\\/g, "/")}` : (item.img || "https://via.placeholder.com/600x400?text=Property");
+        const mainPhotoPath = item.photos?.main;
+        const imgSrc = mainPhotoPath
+            ? `${API_BASE}/${mainPhotoPath.replace(/\\/g, "/")}`
+            : "https://via.placeholder.com/600x400?text=Property";
+
         card.innerHTML = `
       <img src="${imgSrc}" alt="${escapeHtml(item.title || "Property")}">
       <h3>${escapeHtml(item.title || "")}</h3>
@@ -1268,6 +1272,7 @@ async function deleteListing(id) {
         });
 
         toast("Property deleted");
+        await fetchListings(); // force reload from server
         loadAdminListings();
 
     } catch (err) {
