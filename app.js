@@ -372,7 +372,12 @@ function initAddPropertyModal() {
             fd.append("totalFloors", $("ap_total_floors").value);
             fd.append("bedrooms", $("ap_bedrooms").value);
             fd.append("bathrooms", $("ap_bathrooms").value);
-            fd.append("MobileNumber", $("ap_mobile_number").value);
+            const ownerMobile = $("ap_mobile_number").value.trim();
+            if (!/^[6-9]\d{9}$/.test(ownerMobile)) {
+                toast("Enter valid owner mobile number");
+                return;
+            }
+            fd.append("MobileNumber", ownerMobile);
             fd.append("description", $("ap_desc").value);
             fd.append("ownerName", $("ap_owner_name").value);
 
