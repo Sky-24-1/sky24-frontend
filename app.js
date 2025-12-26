@@ -349,57 +349,112 @@ function initAddPropertyModal() {
                 return;
             }
 
-            const fd = new FormData();
-
+            // ===== GET VALUES =====
+            const state = $("ap_state").value.trim();
+            const city = $("ap_city").value.trim();
+            const area = $("ap_area").value.trim();
+            const address = $("ap_address").value.trim();
             const pincode = $("ap_pincode").value.trim();
+
+            const propertyType = $("ap_type").value;
+            const mode = $("ap_mode").value;
+            const price = $("ap_price").value;
+            const sqft = $("ap_sqft").value;
+            const carpet = $("ap_carpet").value;
+            const floor = $("ap_floor").value;
+            const totalFloors = $("ap_total_floors").value;
+            const bedrooms = $("ap_bedrooms").value;
+            const bathrooms = $("ap_bathrooms").value;
+            const description = $("ap_desc").value.trim();
+            const ownerName = $("ap_owner_name").value.trim();
+
+            const ownerMobile = $("ap_mobile_number").value.trim();
+
+            // ===== VALIDATION (CRITICAL FIX) =====
+            if (!state || !city || !area || !address) {
+                toast("Please fill all location details");
+                return;
+            }
+
             if (!/^[0-9]{6}$/.test(pincode)) {
                 toast("Enter valid 6-digit pincode");
                 return;
             }
 
-            fd.append("state", $("ap_state").value.trim());
-            fd.append("city", $("ap_city").value.trim());
-            fd.append("pincode", pincode);
-            fd.append("area", $("ap_area").value.trim());
-            fd.append("address", $("ap_address").value.trim());
+            if (!propertyType) {
+                toast("Select property type");
+                return;
+            }
 
-            fd.append("propertyType", $("ap_type").value);
-            fd.append("mode", $("ap_mode").value);
-            fd.append("price", $("ap_price").value);
-            fd.append("sqft", $("ap_sqft").value);
-            fd.append("carpet", $("ap_carpet").value);
-            fd.append("floor", $("ap_floor").value);
-            fd.append("totalFloors", $("ap_total_floors").value);
-            fd.append("bedrooms", $("ap_bedrooms").value);
-            fd.append("bathrooms", $("ap_bathrooms").value);
-            const ownerMobile = $("ap_mobile_number").value.trim();
+            if (!price || Number(price) <= 0) {
+                toast("Enter valid price");
+                return;
+            }
+
+            if (!ownerName) {
+                toast("Owner name is required");
+                return;
+            }
+
             if (!/^[6-9]\d{9}$/.test(ownerMobile)) {
                 toast("Enter valid owner mobile number");
                 return;
             }
-            fd.append("MobileNumber", ownerMobile);
-            fd.append("description", $("ap_desc").value);
-            fd.append("ownerName", $("ap_owner_name").value);
 
             const mainPhoto = $("ap_main_photo").files[0];
             if (!mainPhoto) {
                 toast("Main photo is required");
                 return;
             }
+
+            // ===== BUILD FORM DATA =====
+            const fd = new FormData();
+
+            fd.append("state", state);
+            fd.append("city", city);
+            fd.append("area", area);
+            fd.append("address", address);
+            fd.append("pincode", pincode);
+
+            fd.append("propertyType", propertyType);
+            fd.append("mode", mode);
+            fd.append("price", price);
+            fd.append("sqft", sqft);
+            fd.append("carpet", carpet);
+            fd.append("floor", floor);
+            fd.append("totalFloors", totalFloors);
+            fd.append("bedrooms", bedrooms);
+            fd.append("bathrooms", bathrooms);
+
+            fd.append("ownerName", ownerName);
+            fd.append("MobileNumber", ownerMobile);
+            fd.append("description", description);
+
             fd.append("mainPhoto", mainPhoto);
 
-            $("ap_hall_photo").files[0] && fd.append("hallPhoto", $("ap_hall_photo").files[0]);
-            $("ap_kitchen_photo").files[0] && fd.append("kitchenPhoto", $("ap_kitchen_photo").files[0]);
+            $("ap_hall_photo").files[0] &&
+                fd.append("hallPhoto", $("ap_hall_photo").files[0]);
 
-            [...$("ap_bedroom_photos").files].forEach(f => fd.append("bedroomPhotos", f));
-            [...$("ap_bathroom_photos").files].forEach(f => fd.append("bathroomPhotos", f));
+            $("ap_kitchen_photo").files[0] &&
+                fd.append("kitchenPhoto", $("ap_kitchen_photo").files[0]);
 
+            [...$("ap_bedroom_photos").files].forEach(f =>
+                fd.append("bedroomPhotos", f)
+            );
+
+            [...$("ap_bathroom_photos").files].forEach(f =>
+                fd.append("bathroomPhotos", f)
+            );
+
+            // ===== SUBMIT =====
             submitBtn.disabled = true;
             submitBtn.textContent = "Uploading...";
 
             const res = await fetch(`${API_BASE}/api/listings`, {
                 method: "POST",
-                headers: { Authorization: `Bearer ${getToken()}` },
+                headers: {
+                    Authorization: `Bearer ${getToken()}`
+                },
                 body: fd
             });
 
@@ -408,16 +463,19 @@ function initAddPropertyModal() {
             submitBtn.disabled = false;
             submitBtn.textContent = "Submit Property";
 
-            if (!res.ok) throw new Error(data.error || "Upload failed");
+            if (!res.ok) {
+                throw new Error(data.error || "Failed to add property");
+            }
 
             toast("Property added successfully");
             hideModal(modal);
             fetchListings();
 
         } catch (err) {
+            console.error("ADD PROPERTY ERROR:", err);
             submitBtn.disabled = false;
             submitBtn.textContent = "Submit Property";
-            toast(err.message || "Upload error");
+            toast(err.message || "Upload failed");
         }
     });
 }
