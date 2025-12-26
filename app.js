@@ -315,9 +315,18 @@ function renderListings(list = []) {
 }
 
 /* Small helper to avoid HTML injection in text nodes */
-function escapeHtml(s) {
-    if (!s) return "";
-    return s.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
+function escapeHtml(value) {
+    if (value === null || value === undefined) return "";
+
+    // convert anything (number, string) safely to string
+    const s = String(value);
+
+    return s
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 }
 
 /* ========== ADD PROPERTY (BROKER ONLY) ========== */
