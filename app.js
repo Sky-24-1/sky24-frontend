@@ -1047,7 +1047,7 @@ renderListings = function (listings) {
                 show($("blocker"));
                 return;
             }
-            openPropertyDetails(listings[i]);
+            openPropertyDetails(listings.find(l => l._id === card.dataset.id));
         });
     });
 };
@@ -1242,7 +1242,6 @@ async function verifyBroker(id) {
     }
 }
 
-
 async function loadAdminListings() {
     try {
         const data = await apiFetch("/api/admin/listings");
@@ -1261,7 +1260,7 @@ async function loadAdminListings() {
                 <button class="btn danger">Delete</button>
             `;
 
-            row.querySelector("button").onclick = () => deleteListing(p.id);
+            row.querySelector("button").onclick = () => deleteListing(p._id);
             box.appendChild(row);
         });
 
@@ -1271,6 +1270,12 @@ async function loadAdminListings() {
 }
 
 async function deleteListing(id) {
+    if (!id) {
+        toast("Invalid listing ID");
+        console.error("Delete failed: missing ID");
+        return;
+    }
+
     if (!confirm("Delete this property?")) return;
 
     try {
@@ -1279,10 +1284,14 @@ async function deleteListing(id) {
         });
 
         toast("Property deleted");
-        await fetchListings(); // force reload from server
-        loadAdminListings();
+
+        // 🔥 FORCE UI REFRESH
+        document.getElementById("listings").innerHTML = "";
+        await fetchListings();
+        await loadAdminListings();
 
     } catch (err) {
+        console.error("Delete error:", err);
         toast(err.message || "Delete failed");
     }
 }
