@@ -310,6 +310,9 @@ function renderListings(list = []) {
     list.filter(item => item && item._id).forEach(item => {
         const card = document.createElement("div");
         card.className = "property-card fancy-hover";
+
+        card.dataset.id = item._id;
+       
         const mainPhotoPath = item.photos?.main;
         const imgSrc = mainPhotoPath
             ? `${API_BASE}/${mainPhotoPath.replace(/\\/g, "/")}`
@@ -944,20 +947,30 @@ let currentListing = null;
 
 /* Open property details */
 function openPropertyDetails(listing) {
+    if (!listing) return;
+
     currentListing = listing;
 
-    // Hide main listings
     hide($("mainContent"));
     show($("propertyDetails"));
 
-    // Title & location
-    $("pd_title").textContent = listing.title || "Property";
+    /* =====================
+       BASIC INFO
+    ===================== */
+
+    $("pd_title").textContent =
+        `${listing.propertyType || "Property"} in ${listing.city || ""}`;
+
     $("pd_location").textContent =
-        `${listing.area || ""}, ${listing.city}, ${listing.state}`;
+        `${listing.area || ""}, ${listing.city || ""}, ${listing.state || ""}`;
 
-    $("pd_price").textContent = "₹ " + listing.price.toLocaleString();
+    $("pd_price").textContent =
+        "₹ " + Number(listing.price || 0).toLocaleString();
 
-    // Specs
+    /* =====================
+       SPECS
+    ===================== */
+
     $("pd_type").textContent = listing.propertyType || "-";
     $("pd_sqft").textContent = listing.sqft || "-";
     $("pd_carpet").textContent = listing.carpet || "-";
@@ -965,60 +978,67 @@ function openPropertyDetails(listing) {
     $("pd_totalFloors").textContent = listing.totalFloors || "-";
     $("pd_bedrooms").textContent = listing.bedrooms || "-";
     $("pd_bathrooms").textContent = listing.bathrooms || "-";
-    $("pd_MobileNumber").textContent = listing.owner?.MobileNumber || "-";
 
-    $("pd_description").textContent = listing.description || "No description provided.";
+    /* =====================
+       DESCRIPTION
+    ===================== */
 
-    // Owner
-    $("pd_ownerName").textContent = listing.owner?.name || "-";
+    $("pd_description").textContent =
+        listing.description || "No description provided.";
 
-    // Broker
-    $("pd_agentName").textContent = listing.agentName || "-";
-    $("pd_brokerId").textContent = listing.brokerId || "-";
+    /* =====================
+       OWNER (FIXED)
+    ===================== */
 
-    // Images
+    $("pd_ownerName").textContent =
+        listing.ownerName || "-";
+
+    $("pd_MobileNumber").textContent =
+        listing.MobileNumber || "-";
+
+    /* =====================
+       BROKER
+    ===================== */
+
+    $("pd_agentName").textContent =
+        listing.agentName || "-";
+
+    $("pd_brokerId").textContent =
+        listing.brokerId || "-";
+
+    /* =====================
+       IMAGES
+    ===================== */
+
     const photos = listing.photos || {};
 
-    const imageList = [
-        photos.main,
-        photos.hall,
-        photos.kitchen,
-        ...(photos.bedrooms || []),
-        ...(photos.bathrooms || [])
-    ].filter(Boolean);
-
-    // MAIN IMAGE CLICK
-    setMainImage(photos.main);
-    $("pd_mainImage").onclick = () => openGallery(imageList, 0);
+    // MAIN IMAGE
+    if (photos.main) {
+        setMainImage(photos.main);
+    }
 
     // THUMBNAILS
-    setThumb("pd_thumb_hall", photos.hall, imageList);
-    setThumb("pd_thumb_kitchen", photos.kitchen, imageList);
-    setThumb("pd_thumb_bedroom", photos.bedrooms?.[0], imageList);
-    setThumb("pd_thumb_bathroom", photos.bathrooms?.[0], imageList);
+    setThumb("pd_thumb_hall", photos.hall);
+    setThumb("pd_thumb_kitchen", photos.kitchen);
+    setThumb("pd_thumb_bedroom", photos.bedrooms?.[0]);
+    setThumb("pd_thumb_bathroom", photos.bathrooms?.[0]);
 }
 
 /* Set main image */
 function setMainImage(src) {
     if (!src) return;
-    $("pd_mainImage").src = `${API_BASE}/${src}`;
+    $("pd_mainImage").src = `${API_BASE}/${src.replace(/\\/g, "/")}`;
 }
 
-/* Set thumbnail */
-function setThumb(id, src, allImages = []) {
+function setThumb(id, src) {
     const el = $(id);
     if (!el || !src) {
         el.style.display = "none";
         return;
     }
-
-    el.src = `${API_BASE}/${src}`;
+    el.src = `${API_BASE}/${src.replace(/\\/g, "/")}`;
     el.style.display = "block";
-
-    el.onclick = () => {
-        const index = allImages.indexOf(src);
-        openGallery(allImages, index >= 0 ? index : 0);
-    };
+    el.onclick = () => setMainImage(src);
 }
 
 /* Back button */
@@ -1056,17 +1076,15 @@ const originalRenderListings = renderListings;
 renderListings = function (listings) {
     originalRenderListings(listings);
 
-    document.querySelectorAll(".property-card").forEach((card, i) => {
-        card.addEventListener("click", (e) => {
-            if (e.target.closest("button")) return;
-
-            if (!getToken()) {
-                show($("blocker"));
-                return;
-            }
-            openPropertyDetails(listings.find(l => l._id === card.dataset.id));
+    document.querySelectorAll(".property-card").forEach(card => {
+        card.addEventListener("click", () => {
+            const id = card.dataset.id;
+            const listing = listings.find(l => l._id === id);
+            if (!listing) return;
+            openPropertyDetails(listing);
         });
     });
+
 };
 
 /* =====================================================
