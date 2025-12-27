@@ -978,12 +978,24 @@ function openPropertyDetails(listing) {
 
     // Images
     const photos = listing.photos || {};
-    setMainImage(photos.main);
 
-    setThumb("pd_thumb_hall", photos.hall);
-    setThumb("pd_thumb_kitchen", photos.kitchen);
-    setThumb("pd_thumb_bedroom", photos.bedrooms?.[0]);
-    setThumb("pd_thumb_bathroom", photos.bathrooms?.[0]);
+    const imageList = [
+        photos.main,
+        photos.hall,
+        photos.kitchen,
+        ...(photos.bedrooms || []),
+        ...(photos.bathrooms || [])
+    ].filter(Boolean);
+
+    // MAIN IMAGE CLICK
+    setMainImage(photos.main);
+    $("pd_mainImage").onclick = () => openGallery(imageList, 0);
+
+    // THUMBNAILS
+    setThumb("pd_thumb_hall", photos.hall, imageList);
+    setThumb("pd_thumb_kitchen", photos.kitchen, imageList);
+    setThumb("pd_thumb_bedroom", photos.bedrooms?.[0], imageList);
+    setThumb("pd_thumb_bathroom", photos.bathrooms?.[0], imageList);
 }
 
 /* Set main image */
@@ -993,15 +1005,20 @@ function setMainImage(src) {
 }
 
 /* Set thumbnail */
-function setThumb(id, src) {
+function setThumb(id, src, allImages = []) {
     const el = $(id);
     if (!el || !src) {
         el.style.display = "none";
         return;
     }
+
     el.src = `${API_BASE}/${src}`;
     el.style.display = "block";
-    el.onclick = () => setMainImage(src);
+
+    el.onclick = () => {
+        const index = allImages.indexOf(src);
+        openGallery(allImages, index >= 0 ? index : 0);
+    };
 }
 
 /* Back button */
@@ -1051,6 +1068,68 @@ renderListings = function (listings) {
         });
     });
 };
+
+/* =====================================================
+   FULLSCREEN GALLERY LOGIC
+===================================================== */
+
+let galleryImages = [];
+let galleryIndex = 0;
+
+function openGallery(images, startIndex = 0) {
+    galleryImages = images;
+    galleryIndex = startIndex;
+
+    const overlay = $("galleryOverlay");
+    const main = $("galleryMain");
+    const thumbs = $("galleryThumbs");
+
+    thumbs.innerHTML = "";
+
+    images.forEach((src, i) => {
+        const img = document.createElement("img");
+        img.src = `${API_BASE}/${src}`;
+        img.onclick = () => showGalleryImage(i);
+        thumbs.appendChild(img);
+    });
+
+    showGalleryImage(galleryIndex);
+    overlay.classList.remove("hidden");
+    document.body.style.overflow = "hidden";
+}
+
+function showGalleryImage(i) {
+    galleryIndex = i;
+    $("galleryMain").src = `${API_BASE}/${galleryImages[i]}`;
+
+    qsa("#galleryThumbs img").forEach((img, idx) => {
+        img.classList.toggle("active", idx === i);
+    });
+}
+
+$("galleryClose").onclick = closeGallery;
+function closeGallery() {
+    $("galleryOverlay").classList.add("hidden");
+    document.body.style.overflow = "";
+}
+
+$("galleryPrev").onclick = () => {
+    galleryIndex =
+        (galleryIndex - 1 + galleryImages.length) % galleryImages.length;
+    showGalleryImage(galleryIndex);
+};
+
+$("galleryNext").onclick = () => {
+    galleryIndex = (galleryIndex + 1) % galleryImages.length;
+    showGalleryImage(galleryIndex);
+};
+
+document.addEventListener("keydown", (e) => {
+    if ($("galleryOverlay").classList.contains("hidden")) return;
+    if (e.key === "Escape") closeGallery();
+    if (e.key === "ArrowLeft") $("galleryPrev").click();
+    if (e.key === "ArrowRight") $("galleryNext").click();
+});
 
 /* =====================================================
    BROKER PROFILE PAGE – JS
