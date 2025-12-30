@@ -1027,7 +1027,7 @@ function openPropertyDetails(listing) {
 /* Set main image */
 function setMainImage(src) {
     if (!src) return;
-    $("pd_mainImage").src = `${API_BASE}/${src.replace(/\\/g, "/")}`;
+    $("pd_mainImage").src = src;
 }
 
 function setThumb(id, src) {
