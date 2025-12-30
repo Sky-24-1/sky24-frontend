@@ -314,9 +314,7 @@ function renderListings(list = []) {
         card.dataset.id = item._id;
        
         const mainPhotoPath = item.photos?.main;
-        const imgSrc = mainPhotoPath
-            ? `${API_BASE}/${mainPhotoPath.replace(/\\/g, "/")}`
-            : "https://via.placeholder.com/600x400?text=Property";
+        const imgSrc = item.photos?.main || "https://via.placeholder.com/600x400";
 
         card.innerHTML = `
       <img src="${imgSrc}" alt="${escapeHtml(item.title || "Property")}">
@@ -1036,7 +1034,7 @@ function setThumb(id, src) {
         el.style.display = "none";
         return;
     }
-    el.src = `${API_BASE}/${src.replace(/\\/g, "/")}`;
+    el.src = src;
     el.style.display = "block";
     el.onclick = () => setMainImage(src);
 }
