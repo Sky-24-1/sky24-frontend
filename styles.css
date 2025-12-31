@@ -517,7 +517,6 @@ body {
 
 /* Sticky bar */
 .actions-bar {
-    display: flex;
     gap: 14px;
     background: rgba(13, 19, 33, 0.8);
     padding: 16px;
@@ -1227,14 +1226,14 @@ body {
 
 .footer-social a {
     width: 100px;
-    height: 42px;
+    height: 90px;
     display: flex;
     align-items: center;
     justify-content: center;
     background: #0f172a;
     border-radius: 50%;
     color: #c7d6ff;
-    font-size: 20px;
+    font-size: 40px;
     transition: all 0.3s ease;
     border: 1px solid #1e2a4a;
 }
