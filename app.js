@@ -29,6 +29,11 @@ function authHeaders() {
     return t ? { "Authorization": `Bearer ${t}` } : {};
 }
 
+function resolveImage(src) {
+    if (!src) return "";
+    return src.startsWith("http") ? src : `${API_BASE}/${src}`;
+}
+
 /* --------------- UI helpers --------------- */
 function show(el) { if (!el) return; el.classList.remove("hidden"); }
 function hide(el) { if (!el) return; el.classList.add("hidden"); }
@@ -290,7 +295,8 @@ async function fetchListings(filters = {}) {
         if (!res.ok) throw new Error(data.error || "Failed to load listings");
 
         // 🔥 ALWAYS RENDER FRESH DATA
-        renderListings(data.listings || []);
+        serverListings = data.listings || [];
+        renderListings(serverListings);
 
     } catch (err) {
         console.error("fetchListings error:", err);
@@ -311,19 +317,54 @@ function renderListings(list = []) {
         const card = document.createElement("div");
         card.className = "property-card fancy-hover";
 
-        card.dataset.id = item._id;
+       if (item.isSold) {
+           card.classList.add("sold");
+       }
+
+       card.dataset.id = item._id;
        
-        const mainPhotoPath = item.photos?.main;
-        const imgSrc = item.photos?.main || "https://via.placeholder.com/600x400";
+       const mainPhotoPath = item.photos?.main;
+       const imgSrc = item.photos?.main
+           ? resolveImage(item.photos.main)
+           : "https://via.placeholder.com/600x400";
+
+       const user = getUser();
+       const canMarkSold =
+           user &&
+           (user.role === "founder" ||
+            (user.role === "broker" && user.id === item.agentId));
 
         card.innerHTML = `
+      ${item.isSold ? `<span class="sold-badge">SOLD</span>` : ""}
       <img src="${imgSrc}" alt="${escapeHtml(item.title || "Property")}">
       <h3>${escapeHtml(item.title || "")}</h3>
+      ${canMarkSold ? `
+      <button class="btn danger"
+              onclick="event.stopPropagation(); markSold('${item._id}')">
+          Mark as Sold
+      </button>
+      ` : ""}
       <p>${escapeHtml(item.city || "")}, ${escapeHtml(item.state || "")} • ${escapeHtml(item.propertyType || item.type || "")} • ${escapeHtml(item.price || "")}</p>
       <p style="color:#8fa6c8;margin-top:8px">Agent: ${escapeHtml(item.agentName || "Agent")}</p>
     `;
         el.appendChild(card);
     });
+}
+
+async function markSold(id) {
+    if (!confirm("Mark this property as SOLD?")) return;
+
+    try {
+        await apiFetch(`/api/listings/${id}/sold`, {
+            method: "POST"
+        });
+
+        toast("Property marked as SOLD");
+        fetchListings();
+
+    } catch (err) {
+        toast(err.message || "Failed to mark sold");
+    }
 }
 
 /* Small helper to avoid HTML injection in text nodes */
@@ -955,15 +996,21 @@ function openPropertyDetails(listing) {
     /* =====================
        BASIC INFO
     ===================== */
-
     $("pd_title").textContent =
         `${listing.propertyType || "Property"} in ${listing.city || ""}`;
 
     $("pd_location").textContent =
         `${listing.area || ""}, ${listing.city || ""}, ${listing.state || ""}`;
 
-    $("pd_price").textContent =
-        "₹ " + Number(listing.price || 0).toLocaleString();
+    $("pd_price").innerHTML =
+    "₹ " + Number(listing.price || 0).toLocaleString();
+
+    if (listing.isSold) {
+        $("pd_price").innerHTML +=
+            `<span style="margin-left:12px;color:#ff4d4f;font-weight:bold">
+                SOLD
+             </span>`;
+    }
 
     /* =====================
        SPECS
@@ -1025,7 +1072,7 @@ function openPropertyDetails(listing) {
 /* Set main image */
 function setMainImage(src) {
     if (!src) return;
-    $("pd_mainImage").src = src;
+    $("pd_mainImage").src = resolveImage(src);
 }
 
 function setThumb(id, src) {
@@ -1034,7 +1081,7 @@ function setThumb(id, src) {
         el.style.display = "none";
         return;
     }
-    el.src = src;
+    el.src = resolveImage(src);
     el.style.display = "block";
     el.onclick = () => setMainImage(src);
 }
@@ -1046,24 +1093,24 @@ $("backToListings").addEventListener("click", () => {
 });
 
 /* Broker listings */
-$("viewBrokerListings").addEventListener("click", async () => {
-    if (!currentListing?.brokerId) return;
+//$("viewBrokerListings").addEventListener("click", async () => {
+    //if (!currentListing?.brokerId) return;
 
-    hide($("propertyDetails"));
-    show($("mainContent"));
+    //hide($("propertyDetails"));
+    //show($("mainContent"));
 
-    const res = await fetch(`${API_BASE}/api/listings?brokerId=${currentListing.brokerId}`);
-    const data = await res.json();
+    //const res = await fetch(`${API_BASE}/api/listings?brokerId=${currentListing.brokerId}`);
+    //const data = await res.json();
 
-    if (data.listings.length === 0) {
-        $("listings").innerHTML = `
-            <div class="property-card">
-                No listings from this broker.
-            </div>`;
-    } else {
-        renderListings(data.listings);
-    }
-});
+    //if (data.listings.length === 0) {
+        //$("listings").innerHTML = `
+            //<div class="property-card">
+                //No listings from this broker.
+            //</div>`;
+    //} else {
+        //renderListings(data.listings);
+    //}
+//});
 
 /* =====================================================
    CONNECT PROPERTY CARD → DETAILS PAGE
@@ -1104,7 +1151,7 @@ function openGallery(images, startIndex = 0) {
 
     images.forEach((src, i) => {
         const img = document.createElement("img");
-        img.src = `${API_BASE}/${src}`;
+        img.src = resolveImage(src);
         img.onclick = () => showGalleryImage(i);
         thumbs.appendChild(img);
     });
@@ -1116,7 +1163,7 @@ function openGallery(images, startIndex = 0) {
 
 function showGalleryImage(i) {
     galleryIndex = i;
-    $("galleryMain").src = `${API_BASE}/${galleryImages[i]}`;
+    $("galleryMain").src = resolveImage(galleryImages[i]);
 
     qsa("#galleryThumbs img").forEach((img, idx) => {
         img.classList.toggle("active", idx === i);
@@ -1348,7 +1395,10 @@ async function loadAdminListings() {
             const row = document.createElement("div");
             row.className = "admin-row";
             row.innerHTML = `
-                <div>${p.propertyType}</div>
+                <div>
+                  ${p.propertyType}
+                  ${p.isSold ? " 🔴 SOLD" : ""}
+                </div>
                 <div>${p.city}</div>
                 <div>${p.price}</div>
                 <div>${p.brokerId}</div>
