@@ -332,7 +332,7 @@ function renderListings(list = []) {
        const canMarkSold =
            user &&
            (user.role === "founder" ||
-            (user.role === "broker" && user.id === item.agentId));
+            (user.role === "broker" && user._id === item.agentId));
 
         card.innerHTML = `
       ${item.isSold ? `<span class="sold-badge">SOLD</span>` : ""}
