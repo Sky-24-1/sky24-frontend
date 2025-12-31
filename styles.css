@@ -670,7 +670,6 @@ body {
 
 /* Layout */
 .property-details {
-    display: grid;
     grid-template-columns: 1fr 1.2fr;
     gap: 40px;
 }
@@ -1227,7 +1226,7 @@ body {
 }
 
 .footer-social a {
-    width: 42px;
+    width: 100px;
     height: 42px;
     display: flex;
     align-items: center;
