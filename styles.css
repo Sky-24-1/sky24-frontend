@@ -517,6 +517,7 @@ body {
 
 /* Sticky bar */
 .actions-bar {
+    display: flex;
     gap: 14px;
     background: rgba(13, 19, 33, 0.8);
     padding: 16px;
