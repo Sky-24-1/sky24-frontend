@@ -329,10 +329,13 @@ function renderListings(list = []) {
            : "https://via.placeholder.com/600x400";
 
        const user = getUser();
+       
+       const ownerId = item.agentId || item.brokerId;
+       
        const canMarkSold =
            user &&
            (user.role === "founder" ||
-            (user.role === "broker" && user._id === item.agentId));
+            (user.role === "broker" && user.id === item.agentId));
 
         card.innerHTML = `
       ${item.isSold ? `<span class="sold-badge">SOLD</span>` : ""}
