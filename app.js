@@ -333,9 +333,17 @@ function renderListings(list = []) {
        const ownerId = item.agentId || item.brokerId;
        
        const canMarkSold =
-           user &&
-           (user.role === "founder" ||
-            (user.role === "broker" && user.id === item.agentId));
+    user &&
+    (
+        user.role === "founder" ||
+        (
+            user.role === "broker" &&
+            (
+                item.brokerId === user.brokerId ||
+                item.agentId === user.id   // keep fallback
+            )
+        )
+    );
 
         card.innerHTML = `
       ${item.isSold ? `<span class="sold-badge">SOLD</span>` : ""}
@@ -564,7 +572,8 @@ function initBlocker() {
         if (
             e.target.closest("#loginBtn") ||
             e.target.closest("#registerBtn") ||
-            e.target.closest("#openForgot")
+            e.target.closest("#openForgot") ||
+            e.target.closest(".btn.danger")
         ) return;
 
         // ❌ Block Add Property for guests
