@@ -1482,10 +1482,10 @@ async function loadPendingBrokers() {
                     <span>Broker ID: ${b.brokerId}</span>
 
                     <div class="admin-docs">
-                        <img src="${API_BASE}/${b.brokerDocs.aadharFront}" alt="Aadhaar Front">
-                        <img src="${API_BASE}/${b.brokerDocs.aadharBack}" alt="Aadhaar Back">
-                        <img src="${API_BASE}/${b.brokerDocs.passportPhoto}" alt="Passport Photo">
-                    </div>
+                        <img src="${b.brokerDocs.aadharFront}" alt="Aadhaar Front">
+                        <img src="${b.brokerDocs.aadharBack}" alt="Aadhaar Back">
+                        <img src="${b.brokerDocs.passportPhoto}" alt="Passport Photo">
+                   </div>
                 </div>
                 <div class="admin-actions">
                     <button class="btn-approve">Approve</button>
