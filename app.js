@@ -349,7 +349,7 @@ function renderListings(list = []) {
       ${item.isSold ? `<span class="sold-badge">SOLD</span>` : ""}
       <img src="${imgSrc}" alt="${escapeHtml(item.title || "Property")}">
       <h3>${escapeHtml(item.title || "")}</h3>
-      ${canMarkSold ? `
+      ${canMarkSold && !item.isSold ? `
       <button class="btn danger"
               onclick="event.stopPropagation(); markSold('${item._id}')">
           Mark as Sold
@@ -1134,10 +1134,14 @@ renderListings = function (listings) {
     originalRenderListings(listings);
 
     document.querySelectorAll(".property-card").forEach(card => {
-        card.addEventListener("click", () => {
+        card.addEventListener("click", (e) => {
+            // ✅ Ignore button clicks
+            if (e.target.closest("button")) return;
+
             const id = card.dataset.id;
             const listing = listings.find(l => l._id === id);
             if (!listing) return;
+
             openPropertyDetails(listing);
         });
     });
