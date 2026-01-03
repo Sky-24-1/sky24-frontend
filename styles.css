@@ -584,6 +584,10 @@ body {
     box-shadow: 0 0 18px rgba(47, 143, 255, 0.55);
 }
 
+.fancy-hover::after {
+    pointer-events: none;
+}
+
 /* Scroll-in Animation */
 @keyframes fadein {
     from {
