@@ -58,7 +58,6 @@ const closeModal = hideModal;
 
 /* ===== SAFE RESTRICTED TARGETS (FIX) ===== */
 const restrictedTargets = [
-    ".property-card",
     "#viewBrokerListings",
     "#searchLocationBtn",
     "#searchTypeBtn"
@@ -330,7 +329,7 @@ function renderListings(list = []) {
 
        const user = getUser();
        
-       const ownerId = item.agentId || item.brokerId;
+       //const ownerId = item.agentId || item.brokerId;
        
        const canMarkSold =
     user &&
@@ -350,8 +349,7 @@ function renderListings(list = []) {
       <img src="${imgSrc}" alt="${escapeHtml(item.title || "Property")}">
       <h3>${escapeHtml(item.title || "")}</h3>
       ${canMarkSold && !item.isSold ? `
-      <button class="btn danger"
-              onclick="event.stopPropagation(); markSold('${item._id}')">
+      <button class="btn danger mark-sold-btn" data-id="${item._id}">
           Mark as Sold
       </button>
       ` : ""}
@@ -361,6 +359,29 @@ function renderListings(list = []) {
         el.appendChild(card);
     });
 }
+
+document.addEventListener("click", (e) => {
+
+    // ✅ MARK AS SOLD
+    const soldBtn = e.target.closest(".mark-sold-btn");
+    if (soldBtn) {
+        e.stopPropagation();
+        markSold(soldBtn.dataset.id);
+        return;
+    }
+
+    // ✅ PROPERTY CARD → DETAILS
+    const card = e.target.closest(".property-card");
+    if (!card) return;
+
+    if (e.target.closest("button")) return;
+
+    const id = card.dataset.id;
+    const listing = serverListings.find(l => l._id === id);
+    if (!listing) return;
+
+    openPropertyDetails(listing);
+});
 
 async function markSold(id) {
     if (!confirm("Mark this property as SOLD?")) return;
@@ -1129,24 +1150,27 @@ $("backToListings").addEventListener("click", () => {
 ===================================================== */
 
 // Modify renderListings to attach click
-const originalRenderListings = renderListings;
-renderListings = function (listings) {
-    originalRenderListings(listings);
+//const originalRenderListings = renderListings;
+//renderListings = function (listings) {
+    //originalRenderListings(listings);
 
-    document.querySelectorAll(".property-card").forEach(card => {
-        card.addEventListener("click", (e) => {
-            // ✅ Ignore button clicks
-            if (e.target.closest("button")) return;
+    //document.querySelectorAll(".property-card").forEach(card => {
+        //card.addEventListener("click", (e) => {
 
-            const id = card.dataset.id;
-            const listing = listings.find(l => l._id === id);
-            if (!listing) return;
+            // 🚫 DO NOT open details if clicking button
+            //if (e.target.closest("button")) {
+                //return;
+            //}
 
-            openPropertyDetails(listing);
-        });
-    });
+            //const id = card.dataset.id;
+            //const listing = listings.find(l => l._id === id);
+            //if (!listing) return;
 
-};
+            //openPropertyDetails(listing);
+        //});
+    //});
+
+//};
 
 /* =====================================================
    FULLSCREEN GALLERY LOGIC
