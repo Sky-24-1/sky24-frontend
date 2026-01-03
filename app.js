@@ -349,7 +349,8 @@ function renderListings(list = []) {
       <img src="${imgSrc}" alt="${escapeHtml(item.title || "Property")}">
       <h3>${escapeHtml(item.title || "")}</h3>
       ${canMarkSold && !item.isSold ? `
-      <button class="btn danger mark-sold-btn" data-id="${item._id}">
+      <button class="btn danger"
+              onclick="event.stopPropagation(); markSold('${item._id}')">
           Mark as Sold
       </button>
       ` : ""}
@@ -363,12 +364,12 @@ function renderListings(list = []) {
 document.addEventListener("click", (e) => {
 
     // ✅ MARK AS SOLD
-    const soldBtn = e.target.closest(".mark-sold-btn");
-    if (soldBtn) {
-        e.stopPropagation();
-        markSold(soldBtn.dataset.id);
-        return;
-    }
+    //const soldBtn = e.target.closest(".mark-sold-btn");
+    //if (soldBtn) {
+        //e.stopPropagation();
+        //markSold(soldBtn.dataset.id);
+        //return;
+    //}
 
     // ✅ PROPERTY CARD → DETAILS
     const card = e.target.closest(".property-card");
